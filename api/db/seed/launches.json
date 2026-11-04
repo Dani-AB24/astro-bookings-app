@@ -2,6 +2,7 @@
   {
     "id": "launch-1",
     "name": "Lunar Flyby Alpha",
+    "rocket": "Aurora Heavy",
     "slug": "lunar-flyby-alpha",
     "price": 249999,
     "date": "2027-03-15T14:00:00.000Z",
@@ -16,6 +17,7 @@
   {
     "id": "launch-2",
     "name": "Orbital Sunrise",
+    "rocket": "Falcata 3",
     "slug": "orbital-sunrise",
     "price": 89999,
     "date": "2027-04-20T06:30:00.000Z",
@@ -30,6 +32,7 @@
   {
     "id": "launch-3",
     "name": "Mars Transfer Pioneer",
+    "rocket": "Helios Prime",
     "slug": "mars-transfer-pioneer",
     "price": 1249999,
     "date": "2027-09-01T12:00:00.000Z",
@@ -44,6 +47,7 @@
   {
     "id": "launch-4",
     "name": "Station Resupply Crew",
+    "rocket": "Aurora Heavy",
     "slug": "station-resupply-crew",
     "price": 59999,
     "date": "2027-05-10T09:00:00.000Z",

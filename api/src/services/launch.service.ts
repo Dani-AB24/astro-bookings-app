@@ -7,6 +7,7 @@ import {
 } from '../types/launch';
 import { logger } from '../utils/logger';
 import { JsonRepository } from '../repositories/json.repository';
+import { launchRepository } from '../utils/data-loader';
 
 export class LaunchService {
   private repository: JsonRepository<Launch>;
@@ -65,6 +66,7 @@ export class LaunchService {
     const launch: Launch = {
       id: launchId,
       name: req.name,
+      rocket: req.rocket,
       slug: slug,
       price: req.price,
       date: req.date,
@@ -189,10 +191,18 @@ export class LaunchService {
       throw new Error('Validation failed');
     }
 
-    // Merge request data with existing launch
+    // Copy only editable fields; id, userId, createdAt and computed fields are never taken from the request
+    const editableFields = ['name', 'rocket', 'price', 'date', 'duration', 'launchSite', 'minSeats', 'totalSeats'] as const;
+    const changes: Partial<Launch> = {};
+    for (const field of editableFields) {
+      if (req[field] !== undefined) {
+        Object.assign(changes, { [field]: req[field] });
+      }
+    }
+
     const updatedLaunch: Launch = {
       ...launch,
-      ...req,
+      ...changes,
       // Regenerate slug if name changed
       slug: req.name ? this.generateSlug(req.name) : launch.slug,
       updatedAt: new Date().toISOString(),
@@ -239,6 +249,11 @@ export class LaunchService {
     // Validate name
     if (!req.name || typeof req.name !== 'string' || req.name.trim() === '') {
       errors.push({ field: 'name', message: 'Name is required and must be a non-empty string' });
+    }
+
+    // Validate rocket
+    if (!req.rocket || typeof req.rocket !== 'string' || req.rocket.trim() === '') {
+      errors.push({ field: 'rocket', message: 'Rocket is required and must be a non-empty string' });
     }
 
     // Validate price (try to parse from string)
@@ -364,6 +379,13 @@ export class LaunchService {
     if (req.name !== undefined) {
       if (typeof req.name !== 'string' || req.name.trim() === '') {
         errors.push({ field: 'name', message: 'Name must be a non-empty string' });
+      }
+    }
+
+    // Validate rocket if provided
+    if (req.rocket !== undefined) {
+      if (typeof req.rocket !== 'string' || req.rocket.trim() === '') {
+        errors.push({ field: 'rocket', message: 'Rocket must be a non-empty string' });
       }
     }
 
@@ -517,3 +539,5 @@ export class LaunchService {
       .replace(/^-+|-+$/g, ''); // Remove leading/trailing hyphens
   }
 }
+
+export const launchService = new LaunchService(launchRepository);

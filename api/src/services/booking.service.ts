@@ -5,10 +5,12 @@ import {
   PaymentStatus,
   ValidationError,
 } from '../types/booking';
-import { LaunchService } from './launch.service';
+import { LaunchService, launchService } from './launch.service';
 import { PaymentService } from './payment.service';
+import { MockPaymentGateway } from './mock-payment-gateway';
 import { logger } from '../utils/logger';
 import { JsonRepository } from '../repositories/json.repository';
+import { bookingRepository, paymentRepository } from '../utils/data-loader';
 
 export class BookingService {
   private repository: JsonRepository<Booking>;
@@ -72,6 +74,10 @@ export class BookingService {
     const launch = this.launchService.getById(req.launchId);
     if (!launch) {
       throw new Error('Launch not found');
+    }
+
+    if (launch.status !== 'published') {
+      throw new Error('Launch is not open for booking');
     }
 
     const availableCapacity = this.calculateAvailableCapacity(req.launchId);
@@ -188,6 +194,7 @@ export class BookingService {
       paymentStatus: this.enrichBookingWithPaymentStatus(booking),
       launch: {
         name: launch.name,
+        rocket: launch.rocket,
         slug: launch.slug,
         price: launch.price,
         date: launch.date,
@@ -225,13 +232,16 @@ export class BookingService {
     }
 
     // Validate seats
-    if (typeof req.seats !== 'number' || req.seats < 1) {
+    if (typeof req.seats !== 'number' || !Number.isInteger(req.seats) || req.seats < 1) {
       errors.push({
         field: 'seats',
-        message: 'Seats is required and must be a positive number (at least 1)',
+        message: 'Seats is required and must be a whole number (at least 1)',
       });
     }
 
     return errors;
   }
 }
+
+const paymentService = new PaymentService(new MockPaymentGateway(), paymentRepository);
+export const bookingService = new BookingService(launchService, paymentService, bookingRepository);

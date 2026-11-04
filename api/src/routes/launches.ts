@@ -1,14 +1,20 @@
 import { Request, Response, Router } from 'express';
-import { LaunchService } from '../services/launch.service';
-import { LaunchStatus, CreateLaunchRequest, UpdateLaunchRequest } from '../types/launch';
+import { launchService } from '../services/launch.service';
+import { bookingService } from '../services/booking.service';
+import { Launch, LaunchStatus, CreateLaunchRequest, UpdateLaunchRequest } from '../types/launch';
 import { AuthenticatedRequest } from '../types/auth';
 import { ErrorResponse } from '../types/error';
 import { authenticateToken } from '../middleware/auth.middleware';
 import { logger } from '../utils/logger';
-import { launchRepository } from '../utils/data-loader';
 
 const router = Router();
-const launchService = new LaunchService(launchRepository);
+
+/**
+ * Adds the computed, read-only availableSeats to a launch.
+ */
+function toLaunchResponse(launch: Launch): Launch & { availableSeats: number } {
+  return { ...launch, availableSeats: bookingService.calculateAvailableCapacity(launch.id) };
+}
 
 /**
  * Normalizes create request body:
@@ -87,7 +93,7 @@ router.post('/', authenticateToken, (req: Request, res: Response) => {
     }
 
     const launch = launchService.create(normalizedBody as unknown as CreateLaunchRequest, authReq.user.id);
-    res.status(201).json(launch);
+    res.status(201).json(toLaunchResponse(launch));
   } catch (error) {
     logger.error('LaunchRoute', 'Failed to create launch', error);
     const errorResponse: ErrorResponse = {
@@ -100,7 +106,7 @@ router.post('/', authenticateToken, (req: Request, res: Response) => {
 
 /**
  * GET /launches
- * Lists all launches with optional query parameters
+ * Lists all non-draft launches with optional query parameters
  * Query parameters:
  *   - q: Search term (searches in name, launchSite, slug)
  *   - slug: Filter by exact slug match
@@ -126,7 +132,7 @@ router.get('/', (req: Request, res: Response) => {
       launches = launchService.getAll();
     }
 
-    res.status(200).json(launches);
+    res.status(200).json(launches.filter((launch) => launch.status !== 'draft').map(toLaunchResponse));
   } catch (error) {
     logger.error('LaunchRoute', 'Failed to get launches', error);
     const errorResponse: ErrorResponse = {
@@ -146,14 +152,14 @@ router.get('/', (req: Request, res: Response) => {
 router.get('/:id', (req: Request, res: Response) => {
   try {
     const launch = launchService.getById(req.params.id);
-    if (!launch) {
+    if (!launch || launch.status === 'draft') {
       const errorResponse: ErrorResponse = {
         message: 'Launch not found',
         errors: [],
       };
       return res.status(404).json(errorResponse);
     }
-    res.status(200).json(launch);
+    res.status(200).json(toLaunchResponse(launch));
   } catch (error) {
     logger.error('LaunchRoute', 'Failed to get launch', error);
     const errorResponse: ErrorResponse = {
@@ -201,7 +207,7 @@ router.put('/:id', authenticateToken, (req: Request, res: Response) => {
     }
 
     const launch = launchService.update(req.params.id, req.body as UpdateLaunchRequest, authReq.user.id);
-    res.status(200).json(launch);
+    res.status(200).json(toLaunchResponse(launch));
   } catch (error) {
     logger.error('LaunchRoute', 'Failed to update launch', error);
     let message = 'Failed to update launch';
@@ -319,7 +325,7 @@ router.patch('/:id/status', authenticateToken, (req: Request, res: Response) => 
       req.body.status as LaunchStatus,
       authReq.user.id
     );
-    res.status(200).json(launch);
+    res.status(200).json(toLaunchResponse(launch));
   } catch (error) {
     logger.error('LaunchRoute', 'Failed to transition launch status', error);
     let message = 'Failed to transition launch status';

@@ -12,8 +12,10 @@ export interface TestUser {
 export interface TestLaunch {
   id: string;
   name: string;
+  rocket: string;
   price: number;
   totalSeats: number;
+  availableSeats: number;
 }
 
 export function uniqueText(prefix: string): string {
@@ -53,6 +55,7 @@ export async function createLaunch(
       price: 25,
       date: FAR_FUTURE_DATE,
       duration: 60,
+      rocket: 'Test Rocket',
       launchSite: 'Test Site',
       minSeats: 1,
       totalSeats: 10,

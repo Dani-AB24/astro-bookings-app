@@ -28,6 +28,7 @@ export type { PaymentStatus };
  */
 export interface BookingLaunchInfo {
   name: string;
+  rocket: string;
   slug: string;
   price: number;
   date: string;

@@ -38,8 +38,8 @@ test.describe('Data persistence', () => {
     await createLaunch(request, owner);
 
     const launches = await (await request.get('/launches')).json();
-    for (const seedLaunch of seedLaunches) {
-      expect(launches).toContainEqual(seedLaunch);
+    for (const seedLaunch of seedLaunches.filter((launch: { status: string }) => launch.status !== 'draft')) {
+      expect(launches).toContainEqual(expect.objectContaining(seedLaunch));
     }
   });
 

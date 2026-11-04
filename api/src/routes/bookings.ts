@@ -1,19 +1,12 @@
 import { Request, Response, Router } from 'express';
-import { BookingService } from '../services/booking.service';
-import { LaunchService } from '../services/launch.service';
-import { PaymentService } from '../services/payment.service';
-import { MockPaymentGateway } from '../services/mock-payment-gateway';
+import { bookingService } from '../services/booking.service';
 import { CreateBookingRequest } from '../types/booking';
 import { AuthenticatedRequest } from '../types/auth';
 import { ErrorResponse } from '../types/error';
 import { authenticateToken } from '../middleware/auth.middleware';
 import { logger } from '../utils/logger';
-import { launchRepository, paymentRepository, bookingRepository } from '../utils/data-loader';
 
 const router = Router();
-const launchService = new LaunchService(launchRepository);
-const paymentService = new PaymentService(new MockPaymentGateway(), paymentRepository);
-const bookingService = new BookingService(launchService, paymentService, bookingRepository);
 
 /**
  * GET /bookings
@@ -126,6 +119,9 @@ router.post('/', authenticateToken, (req: Request, res: Response) => {
       if (error.message === 'Launch not found') {
         message = 'Launch not found';
         statusCode = 404;
+      } else if (error.message === 'Launch is not open for booking') {
+        message = 'Launch is not open for booking';
+        statusCode = 400;
       } else if (error.message.includes('Capacity exceeded')) {
         message = error.message;
         statusCode = 400;

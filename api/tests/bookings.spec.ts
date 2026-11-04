@@ -96,6 +96,7 @@ test.describe('Booking retrieval', () => {
     expect(body[0].id).toBe((await created.json()).id);
     expect(body[0].paymentStatus).toBe('paid');
     expect(body[0].launch.name).toBe(launch.name);
+    expect(body[0].launch.rocket).toBe(launch.rocket);
   });
 
   test("another user's booking responds 404", async ({ request }) => {
@@ -113,5 +114,60 @@ test.describe('Booking retrieval', () => {
 
     expect(response.status()).toBe(404);
     expect((await response.json()).message).toBe('Booking not found');
+  });
+});
+
+test.describe('Booking rules', () => {
+  test('fractional seats are rejected', async ({ request }) => {
+    const user = await registerUser(request);
+    const launch = await createLaunch(request, user);
+
+    const response = await request.post('/bookings', {
+      headers: bearer(user.token),
+      data: { launchId: launch.id, seats: 1.5 },
+    });
+
+    expect(response.status()).toBe(400);
+    expect((await response.json()).errors).toContainEqual(expect.objectContaining({ field: 'seats' }));
+  });
+
+  for (const status of ['draft', 'cancelled']) {
+    test(`a ${status} launch is not open for booking`, async ({ request }) => {
+      const user = await registerUser(request);
+      const launch = await createLaunch(request, user, { status: 'draft' });
+      if (status === 'cancelled') {
+        await request.patch(`/launches/${launch.id}/status`, {
+          headers: bearer(user.token),
+          data: { status: 'published' },
+        });
+        await request.patch(`/launches/${launch.id}/status`, {
+          headers: bearer(user.token),
+          data: { status: 'cancelled' },
+        });
+      }
+
+      const response = await request.post('/bookings', {
+        headers: bearer(user.token),
+        data: { launchId: launch.id, seats: 1 },
+      });
+
+      expect(response.status()).toBe(400);
+      expect((await response.json()).message).toBe('Launch is not open for booking');
+      const bookings = await request.get('/bookings', { headers: bearer(user.token) });
+      expect(await bookings.json()).toEqual([]);
+    });
+  }
+
+  test('the published check comes before capacity and payment', async ({ request }) => {
+    const user = await registerUser(request);
+    const launch = await createLaunch(request, user, { status: 'draft', totalSeats: 1, price: 500 });
+
+    const response = await request.post('/bookings', {
+      headers: bearer(user.token),
+      data: { launchId: launch.id, seats: 2 },
+    });
+
+    expect(response.status()).toBe(400);
+    expect((await response.json()).message).toBe('Launch is not open for booking');
   });
 });

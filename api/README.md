@@ -38,7 +38,7 @@ npm test
 
 Runtime data is written to `db/*.json`, which git ignores. Only `db/seed/` is tracked. Passwords are stored in plain text, so do not use a real one.
 
-If you ran the API before the rename to launches, delete your local `db/*.json` files. They use the old IDs and fields. The API starts again from `db/seed/`.
+If you ran the API before the rename to launches or before launches had a `rocket`, delete your local `db/*.json` files. They use the old IDs and fields. The API starts again from `db/seed/`.
 
 A demo account is seeded on every fresh start: `admin@astrobookings.example` / `admin-demo-password`. It has no special permissions, but it owns the seed launches.
 
@@ -54,15 +54,15 @@ The server listens on `http://localhost:3000` and responds with a small JSON pay
 - `POST /login` - Login and receive JWT token (requires: email, password)
 
 **Launches**
-- `GET /launches` - List all launches (supports query parameters: `q`, `slug`, `_sort`, `_order`)
+- `GET /launches` - List all non-draft launches, each with `rocket` and the computed `availableSeats` (supports query parameters: `q`, `slug`, `_sort`, `_order`)
   - Query parameters:
     - `q`: Search term (searches in name, launchSite, slug)
     - `slug`: Filter by exact slug match
     - `_sort`: Field to sort by (e.g., 'id', 'name', 'date', 'price')
     - `_order`: Sort order ('asc' or 'desc', defaults to 'asc')
-- `GET /launches/:id` - Get a specific launch by ID
-- `POST /launches` - Create a new launch (authenticated, requires: name, price, date, duration, launchSite, minSeats, totalSeats, status)
-- `PUT /launches/:id` - Update an existing launch (authenticated, owner only)
+- `GET /launches/:id` - Get a specific non-draft launch by ID (a draft responds 404)
+- `POST /launches` - Create a new launch (authenticated, requires: name, rocket, price, date, duration, launchSite, minSeats, totalSeats, status)
+- `PUT /launches/:id` - Update an existing launch (authenticated, owner only). Only editable fields change: `id`, `userId`, `createdAt` and `availableSeats` are ignored
 - `DELETE /launches/:id` - Delete a launch (authenticated, owner only)
 - `PATCH /launches/:id/status` - Transition launch status (authenticated, owner only, requires: status)
 
@@ -71,7 +71,7 @@ The server listens on `http://localhost:3000` and responds with a small JSON pay
   - Query parameters:
     - `launchId`: Filter bookings by launch ID
 - `GET /bookings/:id` - Get a specific booking by ID (authenticated, owner only)
-- `POST /bookings` - Create a new booking (authenticated, requires: launchId, seats)
+- `POST /bookings` - Create a new booking (authenticated, requires: launchId and `seats`, a whole number of at least 1). Only `published` launches can be booked: otherwise the API responds 400 `Launch is not open for booking`. Each booking includes the launch details, with `rocket`
 
 **Source**
 

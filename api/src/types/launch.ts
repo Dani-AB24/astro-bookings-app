@@ -15,6 +15,7 @@ export type LaunchStatus =
 export interface Launch {
   id: string;
   name: string;
+  rocket: string;
   slug: string;
   price: number;
   date: string; // ISO date string
@@ -33,6 +34,7 @@ export interface Launch {
  */
 export interface CreateLaunchRequest {
   name: string;
+  rocket: string;
   price: number;
   date: string; // ISO date string
   duration?: number; // in minutes, defaults to 60
@@ -47,6 +49,7 @@ export interface CreateLaunchRequest {
  */
 export interface UpdateLaunchRequest {
   name?: string;
+  rocket?: string;
   price?: number;
   date?: string; // ISO date string
   duration?: number; // in minutes
