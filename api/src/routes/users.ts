@@ -1,14 +1,12 @@
 import { Request, Response, Router } from 'express';
-import { UserService } from '../services/user.service';
+import { userService } from '../services/user.service';
 import { generateToken } from '../utils/jwt';
 import { AuthResponse } from '../types/auth';
 import { CreateUserRequest } from '../types/user';
 import { ErrorResponse } from '../types/error';
 import { logger } from '../utils/logger';
-import { userRepository } from '../utils/data-loader';
 
 const router = Router();
-const userService = new UserService(userRepository);
 
 /**
  * POST /users

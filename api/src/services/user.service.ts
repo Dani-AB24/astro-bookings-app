@@ -1,6 +1,7 @@
 import { CreateUserRequest, LoginRequest, User, ValidationError } from '../types/user';
 import { logger } from '../utils/logger';
 import { JsonRepository } from '../repositories/json.repository';
+import { userRepository } from '../utils/data-loader';
 
 export class UserService {
   private repository: JsonRepository<User>;
@@ -197,3 +198,6 @@ export class UserService {
     return errors;
   }
 }
+
+// Shared so that registration and login see the same email index.
+export const userService = new UserService(userRepository);

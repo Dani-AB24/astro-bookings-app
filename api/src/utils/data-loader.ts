@@ -49,3 +49,6 @@ export function loadAllData(): void {
 
   logger.info('DataLoader', 'Data loading completed');
 }
+
+// Loaded on import, because services read these repositories when they are constructed.
+loadAllData();

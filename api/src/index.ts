@@ -1,14 +1,10 @@
 import express from 'express';
 import cors from 'cors';
 import { logger } from './utils/logger';
-import { loadAllData } from './utils/data-loader';
 import authRouter from './routes/auth';
 import usersRouter from './routes/users';
 import activitiesRouter from './routes/activities';
 import bookingsRouter from './routes/bookings';
-
-// Load all data on startup
-loadAllData();
 
 const app = express();
 const PORT = process.env.PORT || 3000;
