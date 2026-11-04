@@ -1,0 +1,10 @@
+[
+  {
+    "id": "user-1",
+    "username": "admin",
+    "email": "admin@astrobookings.example",
+    "password": "admin-demo-password",
+    "terms": true,
+    "createdAt": "2026-11-04T00:00:00.000Z"
+  }
+]

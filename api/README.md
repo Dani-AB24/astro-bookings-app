@@ -36,7 +36,9 @@ npm run typecheck
 npm test
 ```
 
-Runtime data is written to `db/*.json`, which git ignores. Only `db/seed/` is tracked, so register a user before logging in. Passwords are stored in plain text, so do not use a real one.
+Runtime data is written to `db/*.json`, which git ignores. Only `db/seed/` is tracked. Passwords are stored in plain text, so do not use a real one.
+
+A demo account is seeded on every fresh start: `admin@astrobookings.example` / `admin-demo-password`. It has no special permissions, but it owns the seed activities.
 
 The server listens on `http://localhost:3000` and responds with a small JSON payload. Configure the port via `PORT` env var.
 

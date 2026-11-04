@@ -79,6 +79,44 @@ test.describe('User login', () => {
   });
 });
 
+test.describe('Seeded admin user', () => {
+  const adminCredentials = { email: 'admin@astrobookings.example', password: 'admin-demo-password' };
+
+  test('can log in on a fresh start', async ({ request }) => {
+    const response = await request.post('/login', { data: adminCredentials });
+
+    expect(response.status()).toBe(200);
+    expect((await response.json()).user.username).toBe('admin');
+  });
+
+  test('owns the seed activities', async ({ request }) => {
+    const login = await request.post('/login', { data: adminCredentials });
+    const { accessToken } = await login.json();
+
+    // A published activity cannot go back to draft, so an owner gets a 400 and nothing changes.
+    const response = await request.patch('/activities/activity-1/status', {
+      headers: { Authorization: `Bearer ${accessToken}` },
+      data: { status: 'draft' },
+    });
+
+    expect(response.status()).toBe(400);
+    expect((await response.json()).message).toContain('Invalid status transition');
+  });
+
+  test('new users do not take over the seed activities', async ({ request }) => {
+    const user = await registerUser(request);
+    const login = await request.post('/login', { data: { email: user.email, password: TEST_PASSWORD } });
+    const { accessToken } = await login.json();
+
+    const response = await request.patch('/activities/activity-2/status', {
+      headers: { Authorization: `Bearer ${accessToken}` },
+      data: { status: 'draft' },
+    });
+
+    expect(response.status()).toBe(403);
+  });
+});
+
 test.describe('Authenticated endpoints', () => {
   test('a missing token is rejected', async ({ request }) => {
     const response = await request.get('/bookings');

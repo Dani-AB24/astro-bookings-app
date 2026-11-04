@@ -9,7 +9,7 @@ import { logger } from './logger';
  * Repository instances - shared across the application
  */
 export const activityRepository = new JsonRepository<Activity>('db/activities.json', 'db/seed/activities.json');
-export const userRepository = new JsonRepository<User>('db/users.json');
+export const userRepository = new JsonRepository<User>('db/users.json', 'db/seed/users.json');
 export const bookingRepository = new JsonRepository<Booking>('db/bookings.json');
 export const paymentRepository = new JsonRepository<Payment>('db/payments.json');
 
