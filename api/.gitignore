@@ -34,3 +34,10 @@ coverage/
 .DS_Store
 .AppleDouble
 .LSOverride
+
+# Runtime data (created by the API; only db/seed/ is tracked)
+db/*.json
+
+# Playwright
+test-results/
+playwright-report/
