@@ -69,6 +69,21 @@ The API SHALL keep existing users, activities and bookings when new records are 
 - **WHEN** the API restarts and users, activities and bookings are created
 - **THEN** the records that existed before the restart are still returned, unchanged
 
+### Requirement: Seeded admin user
+On a fresh start with no saved user data, the API SHALL provide a demo user named `admin` with the email `admin@astrobookings.example`. This user SHALL own the seed activities and SHALL have no permissions beyond those of any other user.
+
+#### Scenario: Admin login on a fresh start
+- **WHEN** a client sends `POST /login` with the admin's email and demo password on a fresh start
+- **THEN** the API responds 200 with `user`, whose `username` is `admin`, and `accessToken`
+
+#### Scenario: Admin manages a seed activity
+- **WHEN** the admin sends `PATCH /activities/:id/status` with an invalid status transition for a seed activity
+- **THEN** the API responds 400 because the transition is invalid, not 403
+
+#### Scenario: Registered user and seed activities
+- **WHEN** a newly registered user sends `PATCH /activities/:id/status` for a seed activity
+- **THEN** the API responds 403
+
 ### Requirement: Authenticated endpoints
 Booking endpoints and activity changes SHALL require a valid access token sent as `Authorization: Bearer <token>`.
 
