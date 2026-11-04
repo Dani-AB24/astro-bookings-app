@@ -32,7 +32,11 @@ npm run build
 npm run start
 # Type-check only
 npm run typecheck
+# Run the API tests (no browser download needed)
+npm test
 ```
+
+Runtime data is written to `db/*.json`, which git ignores. Only `db/seed/` is tracked, so register a user before logging in. Passwords are stored in plain text, so do not use a real one.
 
 The server listens on `http://localhost:3000` and responds with a small JSON payload. Configure the port via `PORT` env var.
 
@@ -42,7 +46,7 @@ The server listens on `http://localhost:3000` and responds with a small JSON pay
 - `GET /health` - Health check endpoint
 
 **Authentication**
-- `POST /users` - Register a new user (requires: email, username, password, termsAccepted)
+- `POST /users` - Register a new user (requires: email, username, password, terms)
 - `POST /login` - Login and receive JWT token (requires: email, password)
 
 **Activities**
@@ -65,7 +69,9 @@ The server listens on `http://localhost:3000` and responds with a small JSON pay
 - `GET /bookings/:id` - Get a specific booking by ID (authenticated, owner only)
 - `POST /bookings` - Create a new booking (authenticated, requires: activityId, participants)
 
-See specifications in [specs/](specs/) folder for detailed API documentation.
+**Source**
+
+Copied without its git history from [Programacion-Inteligente/activity-bookings-express](https://github.com/Programacion-Inteligente/activity-bookings-express) at commit `68704a5c146a154f58827df8f57dee8a87e38e12`. That repo declares the ISC license in its `package.json`.
 
 --- 
 
