@@ -9,11 +9,11 @@ export interface TestUser {
   token: string;
 }
 
-export interface TestActivity {
+export interface TestLaunch {
   id: string;
   name: string;
   price: number;
-  maxParticipants: number;
+  totalSeats: number;
 }
 
 export function uniqueText(prefix: string): string {
@@ -41,21 +41,21 @@ export async function registerUser(request: APIRequestContext): Promise<TestUser
   return { email: body.user.email, token: body.accessToken };
 }
 
-export async function createActivity(
+export async function createLaunch(
   request: APIRequestContext,
   owner: TestUser,
   overrides: Record<string, unknown> = {},
-): Promise<TestActivity> {
-  const response = await request.post('/activities', {
+): Promise<TestLaunch> {
+  const response = await request.post('/launches', {
     headers: bearer(owner.token),
     data: {
-      name: uniqueText('activity'),
+      name: uniqueText('launch'),
       price: 25,
       date: FAR_FUTURE_DATE,
       duration: 60,
-      location: 'Test Site',
-      minParticipants: 1,
-      maxParticipants: 10,
+      launchSite: 'Test Site',
+      minSeats: 1,
+      totalSeats: 10,
       status: 'published',
       ...overrides,
     },

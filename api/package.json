@@ -1,7 +1,7 @@
 {
-  "name": "activity-bookings-express",
+  "name": "astro-bookings-api",
   "version": "1.10.0",
-  "description": "A backend API for managing activity bookings",
+  "description": "A backend API for managing launch bookings",
   "main": "dist/index.js",
   "scripts": {
     "dev": "tsx src/index.ts",

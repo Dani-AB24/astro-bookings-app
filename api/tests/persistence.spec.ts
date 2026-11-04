@@ -3,7 +3,7 @@ import * as fs from 'fs';
 import * as os from 'os';
 import * as path from 'path';
 import { APIRequestContext, expect, request as playwrightRequest, test } from '@playwright/test';
-import { TEST_PASSWORD, bearer, createActivity, registerUser, userFields } from './support/helpers';
+import { TEST_PASSWORD, bearer, createLaunch, registerUser, userFields } from './support/helpers';
 
 const API_ROOT = path.resolve(__dirname, '..');
 const SEED_DIRECTORY = path.join(API_ROOT, 'db/seed');
@@ -30,20 +30,20 @@ async function waitUntilHealthy(api: APIRequestContext): Promise<void> {
 }
 
 test.describe('Data persistence', () => {
-  test('creating an activity keeps the seed activities', async ({ request }) => {
-    const seedFile = path.join(SEED_DIRECTORY, 'activities.json');
-    const seedActivities = JSON.parse(fs.readFileSync(seedFile, 'utf-8'));
+  test('creating a launch keeps the seed launches', async ({ request }) => {
+    const seedFile = path.join(SEED_DIRECTORY, 'launches.json');
+    const seedLaunches = JSON.parse(fs.readFileSync(seedFile, 'utf-8'));
     const owner = await registerUser(request);
 
-    await createActivity(request, owner);
+    await createLaunch(request, owner);
 
-    const activities = await (await request.get('/activities')).json();
-    for (const seedActivity of seedActivities) {
-      expect(activities).toContainEqual(seedActivity);
+    const launches = await (await request.get('/launches')).json();
+    for (const seedLaunch of seedLaunches) {
+      expect(launches).toContainEqual(seedLaunch);
     }
   });
 
-  test('users, activities and bookings survive a restart', async () => {
+  test('users, launches and bookings survive a restart', async () => {
     const dataDirectory = fs.mkdtempSync(path.join(os.tmpdir(), 'api-restart-'));
     fs.cpSync(SEED_DIRECTORY, path.join(dataDirectory, 'db/seed'), { recursive: true });
     const api = await playwrightRequest.newContext({
@@ -54,13 +54,13 @@ test.describe('Data persistence', () => {
     try {
       await waitUntilHealthy(api);
       const user = await registerUser(api);
-      const activity = await createActivity(api, user);
+      const launch = await createLaunch(api, user);
       const booking = await api.post('/bookings', {
         headers: bearer(user.token),
-        data: { activityId: activity.id, participants: 1 },
+        data: { launchId: launch.id, seats: 1 },
       });
       const bookingId = (await booking.json()).id;
-      const activitiesBeforeRestart = await (await api.get('/activities')).json();
+      const launchesBeforeRestart = await (await api.get('/launches')).json();
 
       await stopServer(server);
       server = startServer(dataDirectory);
@@ -78,15 +78,15 @@ test.describe('Data persistence', () => {
       const newUser = await registerUser(api);
       expect((await api.post('/login', { data: credentials })).status()).toBe(200);
 
-      await createActivity(api, newUser);
-      const activities = await (await api.get('/activities')).json();
-      for (const existingActivity of activitiesBeforeRestart) {
-        expect(activities).toContainEqual(existingActivity);
+      await createLaunch(api, newUser);
+      const launches = await (await api.get('/launches')).json();
+      for (const existingLaunch of launchesBeforeRestart) {
+        expect(launches).toContainEqual(existingLaunch);
       }
 
       const newBooking = await api.post('/bookings', {
         headers: bearer(newUser.token),
-        data: { activityId: activity.id, participants: 1 },
+        data: { launchId: launch.id, seats: 1 },
       });
       expect(newBooking.status()).toBe(201);
       const ownBookings = await (await api.get('/bookings', { headers: bearer(token) })).json();

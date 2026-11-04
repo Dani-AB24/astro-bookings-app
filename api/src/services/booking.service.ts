@@ -5,7 +5,7 @@ import {
   PaymentStatus,
   ValidationError,
 } from '../types/booking';
-import { ActivityService } from './activity.service';
+import { LaunchService } from './launch.service';
 import { PaymentService } from './payment.service';
 import { logger } from '../utils/logger';
 import { JsonRepository } from '../repositories/json.repository';
@@ -13,15 +13,15 @@ import { JsonRepository } from '../repositories/json.repository';
 export class BookingService {
   private repository: JsonRepository<Booking>;
   private nextId = 1;
-  private activityService: ActivityService;
+  private launchService: LaunchService;
   private paymentService: PaymentService;
 
   constructor(
-    activityService: ActivityService,
+    launchService: LaunchService,
     paymentService: PaymentService,
     repository?: JsonRepository<Booking>
   ) {
-    this.activityService = activityService;
+    this.launchService = launchService;
     this.paymentService = paymentService;
     
     if (repository) {
@@ -61,7 +61,7 @@ export class BookingService {
   /**
    * Creates a new booking.
    * Charges via mock gateway first; on success creates payment and booking.
-   * Throws if validation fails, activity not found, capacity exceeded, or payment fails.
+   * Throws if validation fails, launch not found, capacity exceeded, or payment fails.
    */
   create(req: CreateBookingRequest, userId: string): Booking {
     const errors = this.validateCreate(req);
@@ -69,24 +69,24 @@ export class BookingService {
       throw new Error('Validation failed');
     }
 
-    const activity = this.activityService.getById(req.activityId);
-    if (!activity) {
-      throw new Error('Activity not found');
+    const launch = this.launchService.getById(req.launchId);
+    if (!launch) {
+      throw new Error('Launch not found');
     }
 
-    const availableCapacity = this.calculateAvailableCapacity(req.activityId);
-    if (req.participants > availableCapacity) {
-      throw new Error(`Capacity exceeded. Available: ${availableCapacity}, Requested: ${req.participants}`);
+    const availableCapacity = this.calculateAvailableCapacity(req.launchId);
+    if (req.seats > availableCapacity) {
+      throw new Error(`Capacity exceeded. Available: ${availableCapacity}, Requested: ${req.seats}`);
     }
 
-    const amount = activity.price * req.participants;
+    const amount = launch.price * req.seats;
     const bookingId = `booking-${this.nextId++}`;
 
     const payment = this.paymentService.createForBooking(
       bookingId,
       amount,
       userId,
-      req.activityId
+      req.launchId
     );
 
     const now = new Date().toISOString();
@@ -94,9 +94,9 @@ export class BookingService {
 
     const booking: Booking = {
       id: bookingId,
-      activityId: req.activityId,
+      launchId: req.launchId,
       userId,
-      participants: req.participants,
+      seats: req.seats,
       createdAt: now,
       paymentId: payment.id,
       paymentStatus,
@@ -105,34 +105,34 @@ export class BookingService {
     this.repository.create(booking);
     logger.info('BookingService', 'Booking created', {
       id: bookingId,
-      activityId: req.activityId,
-      participants: req.participants,
+      launchId: req.launchId,
+      seats: req.seats,
       paymentId: payment.id,
     });
     return booking;
   }
 
   /**
-   * Retrieves all bookings for a specific activity
-   * Returns array of bookings filtered by activityId
+   * Retrieves all bookings for a specific launch
+   * Returns array of bookings filtered by launchId
    */
-  getBookingsByActivityId(activityId: string): Booking[] {
-    return this.repository.getAll().filter((booking) => booking.activityId === activityId);
+  getBookingsByLaunchId(launchId: string): Booking[] {
+    return this.repository.getAll().filter((booking) => booking.launchId === launchId);
   }
 
   /**
-   * Calculates available capacity for an activity
-   * Returns available capacity as activity.maxParticipants minus sum of participants from existing bookings
+   * Calculates available capacity for a launch
+   * Returns available capacity as launch.totalSeats minus sum of seats from existing bookings
    */
-  calculateAvailableCapacity(activityId: string): number {
-    const activity = this.activityService.getById(activityId);
-    if (!activity) {
+  calculateAvailableCapacity(launchId: string): number {
+    const launch = this.launchService.getById(launchId);
+    if (!launch) {
       return 0;
     }
 
-    const existingBookings = this.getBookingsByActivityId(activityId);
-    const totalBookedParticipants = existingBookings.reduce((sum, booking) => sum + booking.participants, 0);
-    const availableCapacity = activity.maxParticipants - totalBookedParticipants;
+    const existingBookings = this.getBookingsByLaunchId(launchId);
+    const totalBookedSeats = existingBookings.reduce((sum, booking) => sum + booking.seats, 0);
+    const availableCapacity = launch.totalSeats - totalBookedSeats;
 
     return Math.max(0, availableCapacity);
   }
@@ -169,31 +169,31 @@ export class BookingService {
   }
 
   /**
-   * Enriches booking with activity information
-   * Returns booking response with activity details
+   * Enriches booking with launch information
+   * Returns booking response with launch details
    */
-  enrichBookingWithActivity(booking: Booking): BookingResponse {
-    const activity = this.activityService.getById(booking.activityId);
-    if (!activity) {
-      throw new Error('Activity not found');
+  enrichBookingWithLaunch(booking: Booking): BookingResponse {
+    const launch = this.launchService.getById(booking.launchId);
+    if (!launch) {
+      throw new Error('Launch not found');
     }
 
     return {
       id: booking.id,
-      activityId: booking.activityId,
+      launchId: booking.launchId,
       userId: booking.userId,
-      participants: booking.participants,
+      seats: booking.seats,
       createdAt: booking.createdAt,
       paymentId: booking.paymentId,
       paymentStatus: this.enrichBookingWithPaymentStatus(booking),
-      activity: {
-        name: activity.name,
-        slug: activity.slug,
-        price: activity.price,
-        date: activity.date,
-        duration: activity.duration,
-        location: activity.location,
-        status: activity.status,
+      launch: {
+        name: launch.name,
+        slug: launch.slug,
+        price: launch.price,
+        date: launch.date,
+        duration: launch.duration,
+        launchSite: launch.launchSite,
+        status: launch.status,
       },
     };
   }
@@ -219,16 +219,16 @@ export class BookingService {
 
     const req = data as Record<string, unknown>;
 
-    // Validate activityId
-    if (!req.activityId || typeof req.activityId !== 'string' || req.activityId.trim() === '') {
-      errors.push({ field: 'activityId', message: 'Activity ID is required and must be a non-empty string' });
+    // Validate launchId
+    if (!req.launchId || typeof req.launchId !== 'string' || req.launchId.trim() === '') {
+      errors.push({ field: 'launchId', message: 'Launch ID is required and must be a non-empty string' });
     }
 
-    // Validate participants
-    if (typeof req.participants !== 'number' || req.participants < 1) {
+    // Validate seats
+    if (typeof req.seats !== 'number' || req.seats < 1) {
       errors.push({
-        field: 'participants',
-        message: 'Participants is required and must be a positive number (at least 1)',
+        field: 'seats',
+        message: 'Seats is required and must be a positive number (at least 1)',
       });
     }
 

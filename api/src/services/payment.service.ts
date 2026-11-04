@@ -53,12 +53,12 @@ export class PaymentService {
     bookingId: string,
     amount: number,
     userId: string,
-    activityId: string
+    launchId: string
   ): Payment {
     const result = this.gateway.charge(amount, {
       userId,
       bookingId,
-      activityId,
+      launchId,
     });
 
     if (!result.success) {

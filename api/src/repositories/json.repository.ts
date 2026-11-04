@@ -14,8 +14,8 @@ export class JsonRepository<T extends { id: string }> implements Repository<T> {
   private nextId = 1;
 
   /**
-   * @param entityFilePath Path to the entity JSON file (e.g., 'db/activities.json')
-   * @param seedFilePath Optional path to seed data file (e.g., 'db/seed/activities.json')
+   * @param entityFilePath Path to the entity JSON file (e.g., 'db/launches.json')
+   * @param seedFilePath Optional path to seed data file (e.g., 'db/seed/launches.json')
    */
   constructor(entityFilePath: string, seedFilePath?: string) {
     this.entityFilePath = entityFilePath;

@@ -1,26 +1,26 @@
 import {
-  Activity,
-  ActivityStatus,
-  CreateActivityRequest,
-  UpdateActivityRequest,
+  Launch,
+  LaunchStatus,
+  CreateLaunchRequest,
+  UpdateLaunchRequest,
   ValidationError,
-} from '../types/activity';
+} from '../types/launch';
 import { logger } from '../utils/logger';
 import { JsonRepository } from '../repositories/json.repository';
 
-export class ActivityService {
-  private repository: JsonRepository<Activity>;
+export class LaunchService {
+  private repository: JsonRepository<Launch>;
   private nextId = 1;
 
-  constructor(repository?: JsonRepository<Activity>) {
+  constructor(repository?: JsonRepository<Launch>) {
     // Use provided repository or create default in-memory one for backward compatibility
     if (repository) {
       this.repository = repository;
       // Calculate nextId from repository
-      const allActivities = this.repository.getAll();
+      const allLaunches = this.repository.getAll();
       let maxId = 0;
-      for (const activity of allActivities) {
-        const match = activity.id.match(/-(\d+)$/);
+      for (const launch of allLaunches) {
+        const match = launch.id.match(/-(\d+)$/);
         if (match) {
           const num = parseInt(match[1], 10);
           if (num > maxId) {
@@ -31,12 +31,12 @@ export class ActivityService {
       this.nextId = maxId + 1;
     } else {
       // Fallback to in-memory Map for backward compatibility
-      this.repository = new JsonRepository<Activity>('db/activities.json', 'db/seed/activities.json');
+      this.repository = new JsonRepository<Launch>('db/launches.json', 'db/seed/launches.json');
       this.repository.load();
-      const allActivities = this.repository.getAll();
+      const allLaunches = this.repository.getAll();
       let maxId = 0;
-      for (const activity of allActivities) {
-        const match = activity.id.match(/-(\d+)$/);
+      for (const launch of allLaunches) {
+        const match = launch.id.match(/-(\d+)$/);
         if (match) {
           const num = parseInt(match[1], 10);
           if (num > maxId) {
@@ -49,79 +49,79 @@ export class ActivityService {
   }
 
   /**
-   * Creates a new activity
+   * Creates a new launch
    * Throws if validation fails
    */
-  create(req: CreateActivityRequest, userId: string): Activity {
+  create(req: CreateLaunchRequest, userId: string): Launch {
     const errors = this.validateCreate(req);
     if (errors.length > 0) {
       throw new Error('Validation failed');
     }
 
-    const activityId = `activity-${this.nextId++}`;
+    const launchId = `launch-${this.nextId++}`;
     const slug = this.generateSlug(req.name);
     const now = new Date().toISOString();
 
-    const activity: Activity = {
-      id: activityId,
+    const launch: Launch = {
+      id: launchId,
       name: req.name,
       slug: slug,
       price: req.price,
       date: req.date,
       duration: req.duration ?? 60,
-      location: req.location,
-      minParticipants: req.minParticipants,
-      maxParticipants: req.maxParticipants,
+      launchSite: req.launchSite,
+      minSeats: req.minSeats,
+      totalSeats: req.totalSeats,
       status: req.status ?? 'draft',
       userId: userId,
       createdAt: now,
     };
 
-    this.repository.create(activity);
-    logger.info('ActivityService', 'Activity created', { id: activityId, name: activity.name });
-    return activity;
+    this.repository.create(launch);
+    logger.info('LaunchService', 'Launch created', { id: launchId, name: launch.name });
+    return launch;
   }
 
   /**
-   * Retrieves all activities
-   * Returns array of all activities
+   * Retrieves all launches
+   * Returns array of all launches
    */
-  getAll(): Activity[] {
+  getAll(): Launch[] {
     return this.repository.getAll();
   }
 
   /**
-   * Queries activities with optional filters, search, and sorting
+   * Queries launches with optional filters, search, and sorting
    * @param options Query options: q (search term), slug (filter by slug), _sort (field to sort by), _order (asc/desc)
-   * @returns Filtered and sorted array of activities
+   * @returns Filtered and sorted array of launches
    */
   query(options: {
     q?: string;
     slug?: string;
     _sort?: string;
     _order?: 'asc' | 'desc';
-  }): Activity[] {
+  }): Launch[] {
     let results = this.repository.getAll();
 
     // Filter by slug if provided
     if (options.slug) {
-      results = results.filter((activity) => activity.slug === options.slug);
+      results = results.filter((launch) => launch.slug === options.slug);
     }
 
-    // Search by query term (searches in name, location, and slug)
+    // Search by query term (searches in name, launchSite, and slug)
     if (options.q && options.q.trim() !== '') {
       const searchTerm = options.q.toLowerCase().trim();
       results = results.filter(
-        (activity) =>
-          activity.name.toLowerCase().includes(searchTerm) ||
-          activity.location.toLowerCase().includes(searchTerm) ||
-          activity.slug.toLowerCase().includes(searchTerm)
+        (launch) =>
+          launch.name.toLowerCase().includes(searchTerm) ||
+          launch.launchSite.toLowerCase().includes(searchTerm) ||
+          launch.slug.toLowerCase().includes(searchTerm)
       );
     }
 
     // Sort results
     if (options._sort) {
-      const sortField = options._sort as keyof Activity;
+      const sortField = options._sort as keyof Launch;
       const order = options._order === 'desc' ? -1 : 1;
 
       results.sort((a, b) => {
@@ -162,64 +162,64 @@ export class ActivityService {
   }
 
   /**
-   * Retrieves an activity by ID
+   * Retrieves a launch by ID
    * Returns undefined if not found
    */
-  getById(id: string): Activity | undefined {
+  getById(id: string): Launch | undefined {
     return this.repository.getById(id);
   }
 
   /**
-   * Updates an existing activity
-   * Throws if validation fails or activity not found
+   * Updates an existing launch
+   * Throws if validation fails or launch not found
    * Only updates if userId matches
    */
-  update(id: string, req: UpdateActivityRequest, userId: string): Activity {
-    const activity = this.repository.getById(id);
-    if (!activity) {
-      throw new Error('Activity not found');
+  update(id: string, req: UpdateLaunchRequest, userId: string): Launch {
+    const launch = this.repository.getById(id);
+    if (!launch) {
+      throw new Error('Launch not found');
     }
 
-    if (activity.userId !== userId) {
-      throw new Error('Forbidden: You can only update your own activities');
+    if (launch.userId !== userId) {
+      throw new Error('Forbidden: You can only update your own launches');
     }
 
-    const errors = this.validateUpdate(req, activity);
+    const errors = this.validateUpdate(req, launch);
     if (errors.length > 0) {
       throw new Error('Validation failed');
     }
 
-    // Merge request data with existing activity
-    const updatedActivity: Activity = {
-      ...activity,
+    // Merge request data with existing launch
+    const updatedLaunch: Launch = {
+      ...launch,
       ...req,
       // Regenerate slug if name changed
-      slug: req.name ? this.generateSlug(req.name) : activity.slug,
+      slug: req.name ? this.generateSlug(req.name) : launch.slug,
       updatedAt: new Date().toISOString(),
     };
 
-    this.repository.update(id, updatedActivity);
-    logger.info('ActivityService', 'Activity updated', { id, name: updatedActivity.name });
-    return updatedActivity;
+    this.repository.update(id, updatedLaunch);
+    logger.info('LaunchService', 'Launch updated', { id, name: updatedLaunch.name });
+    return updatedLaunch;
   }
 
   /**
-   * Deletes an activity
+   * Deletes a launch
    * Returns true if deleted, false if not found
    * Only deletes if userId matches
    */
   delete(id: string, userId: string): boolean {
-    const activity = this.repository.getById(id);
-    if (!activity) {
+    const launch = this.repository.getById(id);
+    if (!launch) {
       return false;
     }
 
-    if (activity.userId !== userId) {
-      throw new Error('Forbidden: You can only delete your own activities');
+    if (launch.userId !== userId) {
+      throw new Error('Forbidden: You can only delete your own launches');
     }
 
     this.repository.delete(id);
-    logger.info('ActivityService', 'Activity deleted', { id, name: activity.name });
+    logger.info('LaunchService', 'Launch deleted', { id, name: launch.name });
     return true;
   }
 
@@ -274,62 +274,62 @@ export class ActivityService {
       }
     }
 
-    // Validate location
-    if (!req.location || typeof req.location !== 'string' || req.location.trim() === '') {
-      errors.push({ field: 'location', message: 'Location is required and must be a non-empty string' });
+    // Validate launchSite
+    if (!req.launchSite || typeof req.launchSite !== 'string' || req.launchSite.trim() === '') {
+      errors.push({ field: 'launchSite', message: 'Launch site is required and must be a non-empty string' });
     }
 
-    // Validate minParticipants (try to parse from string)
-    let parsedMinParticipants: number | undefined;
-    if (req.minParticipants === undefined || req.minParticipants === null) {
-      errors.push({ field: 'minParticipants', message: 'Min participants is required and must be at least 1' });
+    // Validate minSeats (try to parse from string)
+    let parsedMinSeats: number | undefined;
+    if (req.minSeats === undefined || req.minSeats === null) {
+      errors.push({ field: 'minSeats', message: 'Min seats is required and must be at least 1' });
     } else {
       let parsed: number;
-      if (typeof req.minParticipants === 'string') {
-        parsed = Number(req.minParticipants);
-      } else if (typeof req.minParticipants === 'number') {
-        parsed = req.minParticipants;
+      if (typeof req.minSeats === 'string') {
+        parsed = Number(req.minSeats);
+      } else if (typeof req.minSeats === 'number') {
+        parsed = req.minSeats;
       } else {
         parsed = NaN;
       }
-      parsedMinParticipants = parsed;
+      parsedMinSeats = parsed;
       if (typeof parsed !== 'number' || isNaN(parsed) || parsed < 1) {
-        errors.push({ field: 'minParticipants', message: 'Min participants must be at least 1' });
+        errors.push({ field: 'minSeats', message: 'Min seats must be at least 1' });
       }
     }
 
-    // Validate maxParticipants (try to parse from string)
-    let parsedMaxParticipants: number | undefined;
-    if (req.maxParticipants === undefined || req.maxParticipants === null) {
-      errors.push({ field: 'maxParticipants', message: 'Max participants is required and must be at least 1' });
+    // Validate totalSeats (try to parse from string)
+    let parsedTotalSeats: number | undefined;
+    if (req.totalSeats === undefined || req.totalSeats === null) {
+      errors.push({ field: 'totalSeats', message: 'Total seats is required and must be at least 1' });
     } else {
       let parsed: number;
-      if (typeof req.maxParticipants === 'string') {
-        parsed = Number(req.maxParticipants);
-      } else if (typeof req.maxParticipants === 'number') {
-        parsed = req.maxParticipants;
+      if (typeof req.totalSeats === 'string') {
+        parsed = Number(req.totalSeats);
+      } else if (typeof req.totalSeats === 'number') {
+        parsed = req.totalSeats;
       } else {
         parsed = NaN;
       }
-      parsedMaxParticipants = parsed;
+      parsedTotalSeats = parsed;
       if (typeof parsed !== 'number' || isNaN(parsed) || parsed < 1) {
-        errors.push({ field: 'maxParticipants', message: 'Max participants must be at least 1' });
+        errors.push({ field: 'totalSeats', message: 'Total seats must be at least 1' });
       }
     }
 
-    // Validate minParticipants <= maxParticipants
+    // Validate minSeats <= totalSeats
     if (
-      parsedMinParticipants !== undefined &&
-      parsedMaxParticipants !== undefined &&
-      typeof parsedMinParticipants === 'number' &&
-      typeof parsedMaxParticipants === 'number' &&
-      !isNaN(parsedMinParticipants) &&
-      !isNaN(parsedMaxParticipants) &&
-      parsedMinParticipants > parsedMaxParticipants
+      parsedMinSeats !== undefined &&
+      parsedTotalSeats !== undefined &&
+      typeof parsedMinSeats === 'number' &&
+      typeof parsedTotalSeats === 'number' &&
+      !isNaN(parsedMinSeats) &&
+      !isNaN(parsedTotalSeats) &&
+      parsedMinSeats > parsedTotalSeats
     ) {
       errors.push({
-        field: 'minParticipants',
-        message: 'Min participants must be less than or equal to max participants',
+        field: 'minSeats',
+        message: 'Min seats must be less than or equal to total seats',
       });
     }
 
@@ -351,7 +351,7 @@ export class ActivityService {
    * Validates update request
    * Returns array of all validation errors (empty if valid)
    */
-  validateUpdate(data: unknown, existingActivity: Activity): ValidationError[] {
+  validateUpdate(data: unknown, existingLaunch: Launch): ValidationError[] {
     const errors: ValidationError[] = [];
 
     if (!data || typeof data !== 'object') {
@@ -398,42 +398,42 @@ export class ActivityService {
       }
     }
 
-    // Validate location if provided
-    if (req.location !== undefined) {
-      if (typeof req.location !== 'string' || req.location.trim() === '') {
-        errors.push({ field: 'location', message: 'Location must be a non-empty string' });
+    // Validate launchSite if provided
+    if (req.launchSite !== undefined) {
+      if (typeof req.launchSite !== 'string' || req.launchSite.trim() === '') {
+        errors.push({ field: 'launchSite', message: 'Launch site must be a non-empty string' });
       }
     }
 
-    // Validate minParticipants if provided
-    if (req.minParticipants !== undefined) {
-      if (typeof req.minParticipants !== 'number' || req.minParticipants < 1) {
-        errors.push({ field: 'minParticipants', message: 'Min participants must be at least 1' });
+    // Validate minSeats if provided
+    if (req.minSeats !== undefined) {
+      if (typeof req.minSeats !== 'number' || req.minSeats < 1) {
+        errors.push({ field: 'minSeats', message: 'Min seats must be at least 1' });
       }
     }
 
-    // Validate maxParticipants if provided
-    if (req.maxParticipants !== undefined) {
-      if (typeof req.maxParticipants !== 'number' || req.maxParticipants < 1) {
-        errors.push({ field: 'maxParticipants', message: 'Max participants must be at least 1' });
+    // Validate totalSeats if provided
+    if (req.totalSeats !== undefined) {
+      if (typeof req.totalSeats !== 'number' || req.totalSeats < 1) {
+        errors.push({ field: 'totalSeats', message: 'Total seats must be at least 1' });
       }
     }
 
-    // Validate minParticipants <= maxParticipants
-    const minParticipants = req.minParticipants !== undefined ? req.minParticipants : existingActivity.minParticipants;
-    const maxParticipants = req.maxParticipants !== undefined ? req.maxParticipants : existingActivity.maxParticipants;
-    if (typeof minParticipants === 'number' && typeof maxParticipants === 'number' && minParticipants > maxParticipants) {
+    // Validate minSeats <= totalSeats
+    const minSeats = req.minSeats !== undefined ? req.minSeats : existingLaunch.minSeats;
+    const totalSeats = req.totalSeats !== undefined ? req.totalSeats : existingLaunch.totalSeats;
+    if (typeof minSeats === 'number' && typeof totalSeats === 'number' && minSeats > totalSeats) {
       errors.push({
-        field: 'minParticipants',
-        message: 'Min participants must be less than or equal to max participants',
+        field: 'minSeats',
+        message: 'Min seats must be less than or equal to total seats',
       });
     }
 
-    // Validate status if provided - status changes must go through PATCH /activities/:id/status endpoint
+    // Validate status if provided - status changes must go through PATCH /launches/:id/status endpoint
     if (req.status !== undefined) {
       errors.push({
         field: 'status',
-        message: 'Status cannot be changed via PUT endpoint. Use PATCH /activities/:id/status to transition status.',
+        message: 'Status cannot be changed via PUT endpoint. Use PATCH /launches/:id/status to transition status.',
       });
     }
 
@@ -444,8 +444,8 @@ export class ActivityService {
    * Returns valid next statuses for a given current status
    * Useful for error messages and validation
    */
-  getValidTransitions(currentStatus: ActivityStatus): ActivityStatus[] {
-    const transitionMap: Record<ActivityStatus, ActivityStatus[]> = {
+  getValidTransitions(currentStatus: LaunchStatus): LaunchStatus[] {
+    const transitionMap: Record<LaunchStatus, LaunchStatus[]> = {
       draft: ['published'],
       published: ['confirmed', 'cancelled', 'sold-out'],
       confirmed: ['done', 'cancelled'],
@@ -461,46 +461,46 @@ export class ActivityService {
    * Validates if a status transition is allowed
    * Returns true if transition is valid, false otherwise
    */
-  isValidStatusTransition(currentStatus: ActivityStatus, targetStatus: ActivityStatus): boolean {
+  isValidStatusTransition(currentStatus: LaunchStatus, targetStatus: LaunchStatus): boolean {
     const validTransitions = this.getValidTransitions(currentStatus);
     return validTransitions.includes(targetStatus);
   }
 
   /**
-   * Transitions an activity to a new status
+   * Transitions a launch to a new status
    * Validates the transition and ownership
-   * Throws if validation fails, activity not found, or ownership mismatch
+   * Throws if validation fails, launch not found, or ownership mismatch
    */
-  transitionStatus(id: string, targetStatus: ActivityStatus, userId: string): Activity {
-    const activity = this.repository.getById(id);
-    if (!activity) {
-      throw new Error('Activity not found');
+  transitionStatus(id: string, targetStatus: LaunchStatus, userId: string): Launch {
+    const launch = this.repository.getById(id);
+    if (!launch) {
+      throw new Error('Launch not found');
     }
 
-    if (activity.userId !== userId) {
-      throw new Error('Forbidden: You can only transition your own activities');
+    if (launch.userId !== userId) {
+      throw new Error('Forbidden: You can only transition your own launches');
     }
 
-    if (!this.isValidStatusTransition(activity.status, targetStatus)) {
-      const validTransitions = this.getValidTransitions(activity.status);
+    if (!this.isValidStatusTransition(launch.status, targetStatus)) {
+      const validTransitions = this.getValidTransitions(launch.status);
       throw new Error(
-        `Invalid status transition from ${activity.status} to ${targetStatus}. Valid transitions are: ${validTransitions.join(', ') || 'none (terminal state)'}`
+        `Invalid status transition from ${launch.status} to ${targetStatus}. Valid transitions are: ${validTransitions.join(', ') || 'none (terminal state)'}`
       );
     }
 
-    const updatedActivity: Activity = {
-      ...activity,
+    const updatedLaunch: Launch = {
+      ...launch,
       status: targetStatus,
       updatedAt: new Date().toISOString(),
     };
 
-    this.repository.update(id, updatedActivity);
-    logger.info('ActivityService', 'Activity status transitioned', {
+    this.repository.update(id, updatedLaunch);
+    logger.info('LaunchService', 'Launch status transitioned', {
       id,
-      from: activity.status,
+      from: launch.status,
       to: targetStatus,
     });
-    return updatedActivity;
+    return updatedLaunch;
   }
 
   /**

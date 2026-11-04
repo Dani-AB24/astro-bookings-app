@@ -1,6 +1,6 @@
 import { Request, Response, Router } from 'express';
 import { BookingService } from '../services/booking.service';
-import { ActivityService } from '../services/activity.service';
+import { LaunchService } from '../services/launch.service';
 import { PaymentService } from '../services/payment.service';
 import { MockPaymentGateway } from '../services/mock-payment-gateway';
 import { CreateBookingRequest } from '../types/booking';
@@ -8,17 +8,17 @@ import { AuthenticatedRequest } from '../types/auth';
 import { ErrorResponse } from '../types/error';
 import { authenticateToken } from '../middleware/auth.middleware';
 import { logger } from '../utils/logger';
-import { activityRepository, paymentRepository, bookingRepository } from '../utils/data-loader';
+import { launchRepository, paymentRepository, bookingRepository } from '../utils/data-loader';
 
 const router = Router();
-const activityService = new ActivityService(activityRepository);
+const launchService = new LaunchService(launchRepository);
 const paymentService = new PaymentService(new MockPaymentGateway(), paymentRepository);
-const bookingService = new BookingService(activityService, paymentService, bookingRepository);
+const bookingService = new BookingService(launchService, paymentService, bookingRepository);
 
 /**
  * GET /bookings
  * Retrieves all bookings for the authenticated user
- * Optional query parameter: activityId - filters bookings by activity ID
+ * Optional query parameter: launchId - filters bookings by launch ID
  * Requires authentication
  * Returns 200 with array of enriched booking objects, 401 if unauthenticated
  */
@@ -36,13 +36,13 @@ router.get('/', authenticateToken, (req: Request, res: Response) => {
 
     let bookings = bookingService.getAllByUserId(authReq.user.id);
 
-    // Filter by activityId if provided as query parameter
-    const activityId = req.query.activityId as string | undefined;
-    if (activityId) {
-      bookings = bookings.filter((booking) => booking.activityId === activityId);
+    // Filter by launchId if provided as query parameter
+    const launchId = req.query.launchId as string | undefined;
+    if (launchId) {
+      bookings = bookings.filter((booking) => booking.launchId === launchId);
     }
 
-    const enrichedBookings = bookings.map((booking) => bookingService.enrichBookingWithActivity(booking));
+    const enrichedBookings = bookings.map((booking) => bookingService.enrichBookingWithLaunch(booking));
     res.status(200).json(enrichedBookings);
   } catch (error) {
     logger.error('BookingRoute', 'Failed to retrieve bookings', error);
@@ -74,7 +74,7 @@ router.get('/:id', authenticateToken, (req: Request, res: Response) => {
 
     const bookingId = req.params.id;
     const booking = bookingService.getUserBookingById(bookingId, authReq.user.id);
-    const enrichedBooking = bookingService.enrichBookingWithActivity(booking);
+    const enrichedBooking = bookingService.enrichBookingWithLaunch(booking);
     res.status(200).json(enrichedBooking);
   } catch (error) {
     logger.error('BookingRoute', 'Failed to retrieve booking', error);
@@ -93,7 +93,7 @@ router.get('/:id', authenticateToken, (req: Request, res: Response) => {
  * POST /bookings
  * Creates a new booking
  * Requires authentication
- * Returns 201 on success, 400 on validation error or capacity exceeded, 401 on authentication failure, 404 if activity not found
+ * Returns 201 on success, 400 on validation error or capacity exceeded, 401 on authentication failure, 404 if launch not found
  */
 router.post('/', authenticateToken, (req: Request, res: Response) => {
   const authReq = req as AuthenticatedRequest;
@@ -123,8 +123,8 @@ router.post('/', authenticateToken, (req: Request, res: Response) => {
     let statusCode = 400;
     
     if (error instanceof Error) {
-      if (error.message === 'Activity not found') {
-        message = 'Activity not found';
+      if (error.message === 'Launch not found') {
+        message = 'Launch not found';
         statusCode = 404;
       } else if (error.message.includes('Capacity exceeded')) {
         message = error.message;

@@ -3,7 +3,7 @@ import cors from 'cors';
 import { logger } from './utils/logger';
 import authRouter from './routes/auth';
 import usersRouter from './routes/users';
-import activitiesRouter from './routes/activities';
+import launchesRouter from './routes/launches';
 import bookingsRouter from './routes/bookings';
 
 const app = express();
@@ -13,7 +13,7 @@ app.use(cors());
 app.use(express.json());
 
 app.get('/', (req, res) => {
-  res.status(200).json({ status: 'ok', message: 'ActivityBookings API' });
+  res.status(200).json({ status: 'ok', message: 'AstroBookings API' });
 });
 
 app.get('/health', (req, res) => {
@@ -22,7 +22,7 @@ app.get('/health', (req, res) => {
 
 app.use('/users', usersRouter);
 app.use('/login', authRouter);
-app.use('/activities', activitiesRouter);
+app.use('/launches', launchesRouter);
 app.use('/bookings', bookingsRouter);
 
 app.listen(PORT, () => {

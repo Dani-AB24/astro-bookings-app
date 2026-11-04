@@ -20,7 +20,7 @@ export interface Payment {
 export interface ChargeContext {
   userId: string;
   bookingId: string;
-  activityId: string;
+  launchId: string;
 }
 
 /**

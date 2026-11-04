@@ -5,9 +5,9 @@ import type { PaymentStatus } from './payment';
  */
 export interface Booking {
   id: string;
-  activityId: string;
+  launchId: string;
   userId: string;
-  participants: number;
+  seats: number;
   createdAt: string;
   paymentId?: string;
   paymentStatus?: PaymentStatus;
@@ -17,37 +17,37 @@ export interface Booking {
  * Request DTO for creating a new booking
  */
 export interface CreateBookingRequest {
-  activityId: string;
-  participants: number;
+  launchId: string;
+  seats: number;
 }
 
 export type { PaymentStatus };
 
 /**
- * Activity information included in booking responses
+ * Launch information included in booking responses
  */
-export interface BookingActivityInfo {
+export interface BookingLaunchInfo {
   name: string;
   slug: string;
   price: number;
   date: string;
   duration: number;
-  location: string;
+  launchSite: string;
   status: string;
 }
 
 /**
- * Response DTO for booking retrieval - includes booking details with activity information and payment status
+ * Response DTO for booking retrieval - includes booking details with launch information and payment status
  */
 export interface BookingResponse {
   id: string;
-  activityId: string;
+  launchId: string;
   userId: string;
-  participants: number;
+  seats: number;
   createdAt: string;
   paymentId?: string;
   paymentStatus: PaymentStatus;
-  activity: BookingActivityInfo;
+  launch: BookingLaunchInfo;
 }
 
 /**
