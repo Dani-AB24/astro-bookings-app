@@ -38,3 +38,23 @@ export type RegisterRequest = {
   password: string
   terms: boolean
 }
+
+export type LaunchStatus = 'draft' | 'published' | 'confirmed' | 'sold-out' | 'done' | 'cancelled'
+
+/** A launch as `GET /launches` returns it. `availableSeats` is computed by the API, never stored. */
+export type Launch = {
+  id: string
+  name: string
+  rocket: string
+  slug: string
+  /** Price per seat. The API has no currency; the client shows it in US dollars. */
+  price: number
+  /** ISO date string. */
+  date: string
+  /** In minutes. */
+  duration: number
+  launchSite: string
+  totalSeats: number
+  availableSeats: number
+  status: LaunchStatus
+}

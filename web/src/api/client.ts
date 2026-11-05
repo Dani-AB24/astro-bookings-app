@@ -1,6 +1,13 @@
 import { ApiError, NETWORK_ERROR_STATUS } from './api-error.ts'
 import { readSession } from '../auth/session.ts'
-import type { ApiErrorBody, AuthResponse, HealthResponse, LoginRequest, RegisterRequest } from './types.ts'
+import type {
+  ApiErrorBody,
+  AuthResponse,
+  HealthResponse,
+  Launch,
+  LoginRequest,
+  RegisterRequest,
+} from './types.ts'
 
 const DEFAULT_API_URL = 'http://localhost:3000'
 
@@ -34,6 +41,15 @@ export function login(credentials: LoginRequest): Promise<AuthResponse> {
 
 export function register(details: RegisterRequest): Promise<AuthResponse> {
   return apiRequest<AuthResponse>('/users', { method: 'POST', body: details })
+}
+
+/** Every non-draft launch, soonest first. */
+export function getLaunches(signal?: AbortSignal): Promise<Launch[]> {
+  return apiRequest<Launch[]>('/launches?_sort=date&_order=asc', { signal })
+}
+
+export function getLaunch(id: string, signal?: AbortSignal): Promise<Launch> {
+  return apiRequest<Launch>(`/launches/${encodeURIComponent(id)}`, { signal })
 }
 
 async function send(path: string, { method = 'GET', body, signal }: RequestOptions): Promise<Response> {

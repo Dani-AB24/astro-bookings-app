@@ -1,9 +1,62 @@
 .page {
   display: grid;
-  gap: var(--space-sm);
+  gap: var(--space-md);
   padding-block: var(--space-lg);
+}
+
+.intro {
+  display: grid;
+  gap: var(--space-sm);
 }
 
 .lead {
   color: var(--color-text-muted);
+}
+
+.list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(18rem, 1fr));
+  gap: var(--space-md);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.card {
+  display: grid;
+  align-content: start;
+  gap: var(--space-sm);
+  padding: var(--space-md);
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+}
+
+.name {
+  font-size: 1.15rem;
+}
+
+.facts {
+  display: grid;
+  gap: var(--space-xs);
+  margin: 0;
+}
+
+.facts div {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space-sm);
+}
+
+.facts dt {
+  color: var(--color-text-muted);
+}
+
+.facts dd {
+  margin: 0;
+  text-align: end;
+}
+
+.seats {
+  font-weight: 600;
 }

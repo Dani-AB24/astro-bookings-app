@@ -7,6 +7,7 @@ import { RequireAuth } from './auth/require-auth.tsx'
 import { AppLayout } from './components/app-layout.tsx'
 import { BookingsPage } from './pages/bookings-page.tsx'
 import { HomePage } from './pages/home-page.tsx'
+import { LaunchDetailPage } from './pages/launch-detail-page.tsx'
 import { LoginPage } from './pages/login-page.tsx'
 import { NotFoundPage } from './pages/not-found-page.tsx'
 import { RegisterPage } from './pages/register-page.tsx'
@@ -16,6 +17,7 @@ const router = createBrowserRouter([
     element: <AppLayout />,
     children: [
       { path: '/', element: <HomePage /> },
+      { path: '/launches/:id', element: <LaunchDetailPage /> },
       {
         element: <RedirectIfLoggedIn />,
         children: [

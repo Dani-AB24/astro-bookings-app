@@ -1,0 +1,9 @@
+.marker {
+  justify-self: start;
+  padding: var(--space-xs) var(--space-sm);
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--color-warning-text);
+  background-color: var(--color-warning-background);
+  border-radius: var(--radius);
+}

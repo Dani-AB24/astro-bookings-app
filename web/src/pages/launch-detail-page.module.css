@@ -1,0 +1,35 @@
+.page {
+  display: grid;
+  gap: var(--space-md);
+  padding-block: var(--space-lg);
+}
+
+.message {
+  color: var(--color-text-muted);
+}
+
+.facts {
+  display: grid;
+  gap: var(--space-sm);
+  max-width: 32rem;
+  margin: 0;
+  padding: var(--space-md);
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+}
+
+.facts div {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space-md);
+}
+
+.facts dt {
+  color: var(--color-text-muted);
+}
+
+.facts dd {
+  margin: 0;
+  text-align: end;
+}
