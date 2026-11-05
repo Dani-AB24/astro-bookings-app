@@ -32,6 +32,7 @@ Por supuesto, puedes desarrollarlo con cualquier herramienta de IA que te guste.
 ## Código en este repositorio
 
 - [`api/`](./api/README.md): API de reservas en TypeScript y Express, basada en el proyecto de ejemplo.
+- [`web/`](./web/README.md): cliente web en React, TypeScript y Vite que consume la API.
 
 ---
 

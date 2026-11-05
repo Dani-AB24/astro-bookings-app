@@ -1,0 +1,23 @@
+.header {
+  border-bottom: 1px solid var(--color-border);
+  background-color: var(--color-surface);
+}
+
+.headerContent,
+.main {
+  max-width: var(--content-width);
+  margin: 0 auto;
+  padding: var(--space-md);
+}
+
+.brand {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--color-text);
+  text-decoration: none;
+}
+
+.brand:hover,
+.brand:focus-visible {
+  color: var(--color-accent);
+}
