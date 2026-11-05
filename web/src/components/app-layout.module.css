@@ -3,6 +3,14 @@
   background-color: var(--color-surface);
 }
 
+.headerContent {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-md);
+  align-items: center;
+  justify-content: space-between;
+}
+
 .headerContent,
 .main {
   max-width: var(--content-width);

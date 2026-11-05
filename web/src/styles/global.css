@@ -7,6 +7,7 @@
   --color-accent: #7aa2ff;
   --color-warning-background: #4a3410;
   --color-warning-text: #ffd98a;
+  --color-error-text: #ff9a9a;
   --font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
   --space-xs: 0.25rem;
   --space-sm: 0.5rem;

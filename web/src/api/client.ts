@@ -1,5 +1,6 @@
 import { ApiError, NETWORK_ERROR_STATUS } from './api-error.ts'
-import type { ApiErrorBody, HealthResponse } from './types.ts'
+import { readSession } from '../auth/session.ts'
+import type { ApiErrorBody, AuthResponse, HealthResponse, LoginRequest, RegisterRequest } from './types.ts'
 
 const DEFAULT_API_URL = 'http://localhost:3000'
 
@@ -27,10 +28,22 @@ export function getHealth(signal?: AbortSignal): Promise<HealthResponse> {
   return apiRequest<HealthResponse>('/health', { signal })
 }
 
+export function login(credentials: LoginRequest): Promise<AuthResponse> {
+  return apiRequest<AuthResponse>('/login', { method: 'POST', body: credentials })
+}
+
+export function register(details: RegisterRequest): Promise<AuthResponse> {
+  return apiRequest<AuthResponse>('/users', { method: 'POST', body: details })
+}
+
 async function send(path: string, { method = 'GET', body, signal }: RequestOptions): Promise<Response> {
   const headers: Record<string, string> = { Accept: 'application/json' }
   if (body !== undefined) {
     headers['Content-Type'] = 'application/json'
+  }
+  const session = readSession()
+  if (session !== undefined) {
+    headers.Authorization = `Bearer ${session.accessToken}`
   }
 
   try {

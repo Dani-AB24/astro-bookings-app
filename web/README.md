@@ -32,7 +32,20 @@ npm run dev
 
 Open http://localhost:5173. If the API is not running, every page shows a notice that the AstroBookings service cannot be reached.
 
-The demo account is `admin@astrobookings.example` / `admin-demo-password`.
+## Accounts
+
+Log in with the seeded demo account, or create your own at `/register`:
+
+- Email: `admin@astrobookings.example`
+- Password: `admin-demo-password`
+
+The demo account owns the seed launches and has no special permissions. Pages that need an account, such as **My bookings**, send you to log in first and return you afterwards.
+
+### Session storage
+
+After you log in or register, the client stores your user and access token together in `localStorage` under the key `astrobookings.session`, so you stay logged in across reloads. Logging out removes it. The token lasts 24 hours, and the client does not yet notice when it expires.
+
+Any script running on the page can read `localStorage`, so this is not safe for production. An `httpOnly` cookie would be safer, but it needs API changes, and this project leaves security out at this stage.
 
 ## API address
 
@@ -78,7 +91,9 @@ All tests in a run share one API, so tests should create their own users and lau
 ```
 src/
   api/          API client, error type, query client, and hand-written API types
-  components/   shared UI, such as the layout
+  auth/         stored session, AuthProvider, and the route guards for logged-in and anonymous pages
+  components/   shared UI, such as the layout and form fields
+  forms/        mapping API errors to form fields
   pages/        routed pages
   styles/       global.css with resets and CSS variables
 e2e/            Playwright end-to-end tests
