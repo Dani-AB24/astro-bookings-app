@@ -1,3 +1,4 @@
+import buttonStyles from './button.module.css'
 import styles from './load-error.module.css'
 
 type LoadErrorProps = {
@@ -11,7 +12,7 @@ export function LoadError({ message, onRetry, isRetrying }: LoadErrorProps) {
   return (
     <div role="alert" className={styles.error}>
       <p>{message}</p>
-      <button type="button" className={styles.retry} onClick={onRetry} disabled={isRetrying}>
+      <button type="button" className={buttonStyles.secondary} onClick={onRetry} disabled={isRetrying}>
         Try again
       </button>
     </div>

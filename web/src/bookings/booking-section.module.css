@@ -1,7 +1,6 @@
 .section {
   display: grid;
   gap: var(--space-sm);
-  max-width: 32rem;
 }
 
 .confirmation {

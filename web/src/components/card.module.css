@@ -1,0 +1,79 @@
+/*
+ * Shared card for the launch list and the booking list.
+ *
+ * The whole card is clickable through the stretched-link pattern: the title link's ::after
+ * covers the card, so each card keeps a single link named after its launch. Any interactive
+ * element added inside a card later needs `position: relative; z-index: 1` to stay clickable.
+ */
+.card {
+  position: relative;
+  display: grid;
+  align-content: start;
+  gap: var(--space-sm);
+  padding: var(--space-md);
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  transition: border-color 0.15s ease;
+}
+
+.card:hover {
+  border-color: var(--color-highlight);
+}
+
+.card:focus-within {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+}
+
+.title {
+  padding-bottom: var(--space-sm);
+  font-size: 1.35rem;
+  font-weight: 700;
+  line-height: 1.25;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.title a {
+  color: var(--color-text);
+  text-decoration: none;
+}
+
+.title a:focus-visible {
+  outline: none;
+}
+
+.title a::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+}
+
+.card:hover .title a,
+.title a:focus-visible {
+  color: var(--color-highlight);
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+}
+
+.facts {
+  display: grid;
+  gap: var(--space-xs);
+  margin: 0;
+}
+
+.facts div {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space-sm);
+}
+
+.facts dt {
+  color: var(--color-text-muted);
+}
+
+.facts dd {
+  margin: 0;
+  text-align: end;
+}

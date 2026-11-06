@@ -1,7 +1,9 @@
 .page {
   display: grid;
   gap: var(--space-md);
-  max-width: 24rem;
+  width: 100%;
+  max-width: var(--form-width);
+  margin-inline: auto;
   padding-block: var(--space-lg);
 }
 
@@ -27,21 +29,6 @@
   display: flex;
   gap: var(--space-sm);
   align-items: center;
-}
-
-.submit {
-  padding: var(--space-sm) var(--space-md);
-  font-weight: 600;
-  color: var(--color-background);
-  background-color: var(--color-accent);
-  border: none;
-  border-radius: var(--radius);
-  cursor: pointer;
-}
-
-.submit:disabled {
-  opacity: 0.6;
-  cursor: wait;
 }
 
 .alternative {

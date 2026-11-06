@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom'
 import type { Booking } from '../api/types.ts'
 import { formatSeats } from '../utils/format.ts'
+import buttonStyles from '../components/button.module.css'
 import styles from './booking-section.module.css'
 
 export function BookingConfirmation({ booking }: { booking: Booking }) {
@@ -10,7 +11,9 @@ export function BookingConfirmation({ booking }: { booking: Booking }) {
         <strong>Booking confirmed:</strong> {formatSeats(booking.seats)}. Payment status: {booking.paymentStatus}.
       </p>
       <p>
-        <Link to="/bookings">View my bookings</Link>
+        <Link to="/bookings" className={buttonStyles.secondary}>
+          View my bookings
+        </Link>
       </p>
     </div>
   )

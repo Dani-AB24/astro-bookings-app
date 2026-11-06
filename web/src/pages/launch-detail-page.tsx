@@ -2,6 +2,7 @@ import { Link, useParams } from 'react-router-dom'
 import { ApiError } from '../api/api-error.ts'
 import type { Launch } from '../api/types.ts'
 import { BookingSection } from '../bookings/booking-section.tsx'
+import buttonStyles from '../components/button.module.css'
 import { LoadError } from '../components/load-error.tsx'
 import { LoadingMessage } from '../components/loading-message.tsx'
 import { LaunchAvailabilityMarker } from '../launches/launch-availability-marker.tsx'
@@ -71,7 +72,9 @@ function LaunchDetails({ launch }: { launch: Launch }) {
       </dl>
       <BookingSection launch={launch} />
       <p>
-        <Link to="/">All launches</Link>
+        <Link to="/" className={buttonStyles.secondary}>
+          All launches
+        </Link>
       </p>
     </>
   )
@@ -83,7 +86,9 @@ function LaunchNotFound() {
       <h1>Launch not found</h1>
       <p className={styles.message}>There is no launch at this address.</p>
       <p>
-        <Link to="/">Back to the launch list</Link>
+        <Link to="/" className={buttonStyles.secondary}>
+          Back to the launch list
+        </Link>
       </p>
     </section>
   )

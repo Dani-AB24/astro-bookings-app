@@ -1,6 +1,8 @@
 .page {
   display: grid;
   gap: var(--space-md);
+  max-width: var(--column-width);
+  margin-inline: auto;
   padding-block: var(--space-lg);
 }
 
@@ -11,7 +13,6 @@
 .facts {
   display: grid;
   gap: var(--space-sm);
-  max-width: 32rem;
   margin: 0;
   padding: var(--space-md);
   background-color: var(--color-surface);

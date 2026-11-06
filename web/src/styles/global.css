@@ -5,6 +5,9 @@
   --color-text: #e8ebf5;
   --color-text-muted: #a3abc7;
   --color-accent: #7aa2ff;
+  --color-highlight: #ff8a3d;
+  --color-highlight-hover: #ffa366;
+  --color-on-highlight: var(--color-background);
   --color-warning-background: #4a3410;
   --color-warning-text: #ffd98a;
   --color-error-text: #ff9a9a;
@@ -15,6 +18,8 @@
   --space-lg: 2rem;
   --radius: 0.5rem;
   --content-width: 64rem;
+  --form-width: 30rem;
+  --column-width: 44rem;
 
   color-scheme: dark;
   font-family: var(--font-family);

@@ -26,6 +26,15 @@ function launchFact(page: Page, label: string) {
     .getByRole('definition')
 }
 
+/** Clicks near a card's bottom edge, far from its title link. */
+async function clickCardAwayFromTitle(card: Locator) {
+  const box = await card.boundingBox()
+  if (box === null) {
+    throw new Error('The card is not visible')
+  }
+  await card.click({ position: { x: box.width / 2, y: box.height - 8 } })
+}
+
 async function openLaunchList(page: Page) {
   await page.goto('/')
   await expect(launchCard(page, PUBLISHED_SEED_LAUNCHES[0])).toBeVisible()
@@ -62,6 +71,14 @@ test.describe('Launch list', () => {
     await openLaunchList(page)
 
     await launchCard(page, 'Orbital Sunrise').getByRole('link', { name: 'Orbital Sunrise' }).click()
+
+    await expect(page).toHaveURL('/launches/launch-2')
+  })
+
+  test('selecting a launch anywhere on its card opens its detail page', async ({ page }) => {
+    await openLaunchList(page)
+
+    await clickCardAwayFromTitle(launchCard(page, 'Orbital Sunrise'))
 
     await expect(page).toHaveURL('/launches/launch-2')
   })

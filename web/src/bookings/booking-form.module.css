@@ -11,18 +11,6 @@
   max-width: 8rem;
 }
 
-.submit {
+.submitPlacement {
   justify-self: start;
-  padding: var(--space-sm) var(--space-md);
-  font-weight: 600;
-  color: var(--color-background);
-  background-color: var(--color-accent);
-  border: none;
-  border-radius: var(--radius);
-  cursor: pointer;
-}
-
-.submit:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
 }

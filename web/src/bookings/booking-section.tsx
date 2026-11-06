@@ -7,6 +7,7 @@ import { BookingConfirmation } from './booking-confirmation.tsx'
 import { toBookingFailure } from './booking-failure.ts'
 import { BookingForm } from './booking-form.tsx'
 import { useBookSeats } from './booking-queries.ts'
+import buttonStyles from '../components/button.module.css'
 import styles from './booking-section.module.css'
 
 /**
@@ -35,7 +36,7 @@ export function BookingSection({ launch }: { launch: Launch }) {
       )}
       {isBookable && user === undefined ? (
         <p>
-          <Link to="/login" state={toReturnState(location)}>
+          <Link to="/login" state={toReturnState(location)} className={buttonStyles.primary}>
             Log in to book seats
           </Link>
         </p>

@@ -1,4 +1,4 @@
-import { expect, test, type Page } from '@playwright/test'
+import { expect, test, type Locator, type Page } from '@playwright/test'
 import {
   bookSeatsAs,
   createLaunch,
@@ -34,6 +34,15 @@ function bookingFact(booking: ReturnType<typeof bookingFor>, label: string) {
     .locator('dl > div')
     .filter({ has: booking.page().getByRole('term').getByText(label, { exact: true }) })
     .getByRole('definition')
+}
+
+/** Clicks near a card's bottom edge, far from its title link. */
+async function clickCardAwayFromTitle(card: Locator) {
+  const box = await card.boundingBox()
+  if (box === null) {
+    throw new Error('The card is not visible')
+  }
+  await card.click({ position: { x: box.width / 2, y: box.height - 8 } })
 }
 
 /** Rewrites every booking's payment status in the real `GET /bookings` response. */
@@ -126,6 +135,15 @@ test.describe('Booking list', () => {
 
     await expect(page).toHaveURL(`/launches/${launch.id}`)
     await expect(main(page).getByRole('heading', { name: launch.name, level: 1 })).toBeVisible()
+  })
+
+  test('selecting a booking anywhere on its card opens its launch', async ({ page, request }) => {
+    const launch = await logInWithOneBooking(page, request)
+    await openBookings(page)
+
+    await clickCardAwayFromTitle(bookingFor(page, launch.name))
+
+    await expect(page).toHaveURL(`/launches/${launch.id}`)
   })
 })
 

@@ -1,6 +1,8 @@
 import { Link } from 'react-router-dom'
 import type { BookingWithLaunch } from '../api/types.ts'
 import { useBookings } from '../bookings/booking-queries.ts'
+import buttonStyles from '../components/button.module.css'
+import cardStyles from '../components/card.module.css'
 import { LoadError } from '../components/load-error.tsx'
 import { LoadingMessage } from '../components/loading-message.tsx'
 import { formatBookingDate, formatLaunchDate, formatLaunchStatus, formatPaymentStatus } from '../utils/format.ts'
@@ -32,7 +34,9 @@ function BookingList() {
       <div className={styles.empty}>
         <p className={styles.message}>You have no bookings yet.</p>
         <p>
-          <Link to="/">Browse launches</Link>
+          <Link to="/" className={buttonStyles.secondary}>
+            Browse launches
+          </Link>
         </p>
       </div>
     )
@@ -49,11 +53,11 @@ function BookingList() {
 function BookingCard({ booking }: { booking: BookingWithLaunch }) {
   const { launch } = booking
   return (
-    <li className={styles.card}>
-      <h2 className={styles.name}>
+    <li className={cardStyles.card}>
+      <h2 className={cardStyles.title}>
         <Link to={`/launches/${booking.launchId}`}>{launch.name}</Link>
       </h2>
-      <dl className={styles.facts}>
+      <dl className={cardStyles.facts}>
         <div>
           <dt>Rocket</dt>
           <dd>{launch.rocket}</dd>

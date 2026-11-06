@@ -1,6 +1,7 @@
 import { startTransition } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../auth/auth-context.ts'
+import buttonStyles from './button.module.css'
 import styles from './session-nav.module.css'
 
 /** The layout's account area: log in and register for visitors, the username and logout for people logged in. */
@@ -21,14 +22,20 @@ export function SessionNav() {
     <nav aria-label="Account" className={styles.nav}>
       {user === undefined ? (
         <>
-          <Link to="/login">Log in</Link>
-          <Link to="/register">Register</Link>
+          <Link to="/login" className={buttonStyles.secondary}>
+            Log in
+          </Link>
+          <Link to="/register" className={buttonStyles.primary}>
+            Register
+          </Link>
         </>
       ) : (
         <>
           <span className={styles.username}>{user.username}</span>
-          <Link to="/bookings">My bookings</Link>
-          <button type="button" className={styles.logout} onClick={handleLogout}>
+          <Link to="/bookings" className={buttonStyles.secondary}>
+            My bookings
+          </Link>
+          <button type="button" className={buttonStyles.secondary} onClick={handleLogout}>
             Log out
           </button>
         </>

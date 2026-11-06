@@ -7,6 +7,7 @@ import { useReturnState } from '../auth/return-location.ts'
 import { FieldError, errorId } from '../components/field-error.tsx'
 import { TextField } from '../components/text-field.tsx'
 import { toFormErrors } from '../forms/form-errors.ts'
+import buttonStyles from '../components/button.module.css'
 import styles from './auth-form.module.css'
 
 const REGISTER_FIELDS = ['username', 'email', 'password', 'terms'] as const
@@ -55,7 +56,7 @@ export function RegisterPage() {
           </label>
           <FieldError id={errorId('register-terms')} message={termsError} />
         </div>
-        <button type="submit" className={styles.submit} disabled={mutation.isPending}>
+        <button type="submit" className={buttonStyles.primary} disabled={mutation.isPending}>
           Register
         </button>
       </form>

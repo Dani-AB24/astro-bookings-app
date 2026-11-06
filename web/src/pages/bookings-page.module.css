@@ -17,41 +17,6 @@
   list-style: none;
 }
 
-.card {
-  display: grid;
-  align-content: start;
-  gap: var(--space-sm);
-  padding: var(--space-md);
-  background-color: var(--color-surface);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius);
-}
-
-.name {
-  font-size: 1.15rem;
-}
-
-.facts {
-  display: grid;
-  gap: var(--space-xs);
-  margin: 0;
-}
-
-.facts div {
-  display: flex;
-  justify-content: space-between;
-  gap: var(--space-sm);
-}
-
-.facts dt {
-  color: var(--color-text-muted);
-}
-
-.facts dd {
-  margin: 0;
-  text-align: end;
-}
-
 .empty {
   display: grid;
   gap: var(--space-sm);

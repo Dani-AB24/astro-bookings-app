@@ -6,6 +6,7 @@ import { useAuth } from '../auth/auth-context.ts'
 import { useReturnState } from '../auth/return-location.ts'
 import { TextField } from '../components/text-field.tsx'
 import { toFormErrors } from '../forms/form-errors.ts'
+import buttonStyles from '../components/button.module.css'
 import styles from './auth-form.module.css'
 
 const LOGIN_FIELDS = ['email', 'password'] as const
@@ -45,7 +46,7 @@ export function LoginPage() {
           autoComplete="current-password"
           error={errors.fields.password}
         />
-        <button type="submit" className={styles.submit} disabled={mutation.isPending}>
+        <button type="submit" className={buttonStyles.primary} disabled={mutation.isPending}>
           Log in
         </button>
       </form>

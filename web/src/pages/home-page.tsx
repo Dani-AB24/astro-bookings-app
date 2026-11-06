@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom'
 import type { Launch } from '../api/types.ts'
 import { LoadError } from '../components/load-error.tsx'
+import cardStyles from '../components/card.module.css'
 import { LoadingMessage } from '../components/loading-message.tsx'
 import { LaunchAvailabilityMarker } from '../launches/launch-availability-marker.tsx'
 import { isShownInLaunchList } from '../launches/launch-availability.ts'
@@ -52,11 +53,11 @@ function LaunchList() {
 
 function LaunchCard({ launch }: { launch: Launch }) {
   return (
-    <li className={styles.card}>
-      <h3 className={styles.name}>
+    <li className={cardStyles.card}>
+      <h3 className={cardStyles.title}>
         <Link to={`/launches/${launch.id}`}>{launch.name}</Link>
       </h3>
-      <dl className={styles.facts}>
+      <dl className={cardStyles.facts}>
         <div>
           <dt>Rocket</dt>
           <dd>{launch.rocket}</dd>

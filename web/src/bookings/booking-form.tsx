@@ -1,6 +1,7 @@
 import { useState, type FormEvent } from 'react'
 import type { Launch } from '../api/types.ts'
 import { FieldError, errorId } from '../components/field-error.tsx'
+import buttonStyles from '../components/button.module.css'
 import fieldStyles from '../components/form-field.module.css'
 import { formatPrice, formatSeats } from '../utils/format.ts'
 import styles from './booking-form.module.css'
@@ -54,7 +55,7 @@ export function BookingForm({ launch, isPending, onBook, seatsError }: BookingFo
         />
         <FieldError id={errorId(inputId)} message={fieldError} />
       </div>
-      <button type="submit" className={styles.submit} disabled={!seatCount.valid || isPending}>
+      <button type="submit" className={`${buttonStyles.primary} ${styles.submitPlacement}`} disabled={!seatCount.valid || isPending}>
         {seatCount.valid ? `Book ${formatSeats(seatCount.seats)} for ${formatPrice(launch.price * seatCount.seats)}` : 'Book seats'}
       </button>
     </form>
