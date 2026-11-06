@@ -4,6 +4,7 @@ import type {
   ApiErrorBody,
   AuthResponse,
   Booking,
+  BookingWithLaunch,
   CreateBookingRequest,
   HealthResponse,
   Launch,
@@ -73,6 +74,11 @@ export function getLaunch(id: string, signal?: AbortSignal): Promise<Launch> {
 /** Books and charges immediately. The API has no idempotency key, so each call can create a booking. */
 export function createBooking(details: CreateBookingRequest): Promise<Booking> {
   return apiRequest<Booking>('/bookings', { method: 'POST', body: details })
+}
+
+/** The logged-in person's own bookings, in no particular order. */
+export function getBookings(signal?: AbortSignal): Promise<BookingWithLaunch[]> {
+  return apiRequest<BookingWithLaunch[]>('/bookings', { signal })
 }
 
 async function send(

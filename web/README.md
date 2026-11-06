@@ -43,9 +43,23 @@ The demo account owns the seed launches and has no special permissions. Pages th
 
 ### Session storage
 
-After you log in or register, the client stores your user and access token together in `localStorage` under the key `astrobookings.session`, so you stay logged in across reloads. Logging out removes it. The token lasts 24 hours, and the client does not yet notice when it expires.
+After you log in or register, the client stores your user and access token together in `localStorage` under the key `astrobookings.session`, so you stay logged in across reloads. Logging out removes it. The token lasts 24 hours. When the API rejects it, the client logs you out, says that your session has expired, and returns you to the same page after you log in again.
 
 Any script running on the page can read `localStorage`, so this is not safe for production. An `httpOnly` cookie would be safer, but it needs API changes, and this project leaves security out at this stage.
+
+## Customer flow
+
+1. **Browse launches.** The home page lists upcoming launches, soonest first, with their rocket, price, date, site, and available seats. Select a launch to see its details. Anyone can browse without an account.
+2. **Register or log in.** Use **Register** or **Log in** in the header.
+3. **Book seats.** On a launch that is open for booking, choose a number of seats and select **Book**. The mock payment is charged at once, and the confirmation shows the seats and the payment status.
+4. **View your bookings.** Select **View my bookings** in the confirmation, or **My bookings** in the header. Each booking shows its launch's name, rocket, date, and site, the seats, when it was booked, the payment status (Paid, Pending, or Refunded), and the launch's current status, newest first. Select a launch name to open that launch.
+
+You see only your own bookings. Bookings cannot be cancelled, because the API has no route for it.
+
+## Known limitations
+
+- **A deleted launch breaks the booking list.** The API lets an owner delete a launch that has bookings, and `GET /bookings` then responds 500 for everyone who booked it. Their **My bookings** page shows an error with **Try again** until the API is fixed.
+- **Booking details are current, not historical.** A booking shows its launch's current date and status, which is what a customer needs to see. There is no total paid, because the API returns the launch's current price instead of the amount charged.
 
 ## API address
 
@@ -92,10 +106,13 @@ All tests in a run share one API, so tests should create their own users and lau
 src/
   api/          API client, error type, query client, and hand-written API types
   auth/         stored session, AuthProvider, and the route guards for logged-in and anonymous pages
-  components/   shared UI, such as the layout and form fields
+  bookings/     booking queries, the booking form, and its confirmation
+  components/   shared UI, such as the layout, form fields, and loading and error states
   forms/        mapping API errors to form fields
+  launches/     launch queries and availability
   pages/        routed pages
   styles/       global.css with resets and CSS variables
+  utils/        formatting of prices, dates, durations, and statuses
 e2e/            Playwright end-to-end tests
 ```
 

@@ -1,15 +1,28 @@
-import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useRef } from 'react'
 import { ApiError } from '../api/api-error.ts'
-import { createBooking } from '../api/client.ts'
-import type { CreateBookingRequest } from '../api/types.ts'
+import { createBooking, getBookings } from '../api/client.ts'
+import type { BookingWithLaunch, CreateBookingRequest } from '../api/types.ts'
 import { LAUNCHES_QUERY_KEY } from '../launches/launch-queries.ts'
 
-/** view-bookings reads the person's bookings under this key. */
+/** The person's bookings. AuthProvider resets the cache when the session changes, so one person never sees another's. */
 export const BOOKINGS_QUERY_KEY = ['bookings'] as const
 
 // A 400 for a valid form, such as a capacity error or a closed launch, usually means the page's launch is stale.
 const STALE_LAUNCH_STATUS = 400
+
+/** The person's bookings, newest first. `GET /bookings` has no sort parameters, so the client sorts. */
+export function useBookings() {
+  return useQuery({
+    queryKey: BOOKINGS_QUERY_KEY,
+    queryFn: ({ signal }) => getBookings(signal),
+    select: sortNewestFirst,
+  })
+}
+
+function sortNewestFirst(bookings: BookingWithLaunch[]): BookingWithLaunch[] {
+  return bookings.toSorted((a, b) => Date.parse(b.createdAt) - Date.parse(a.createdAt))
+}
 
 /**
  * Books seats at most once at a time. The API has no idempotency key, so a second request would charge again.

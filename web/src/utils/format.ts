@@ -1,4 +1,4 @@
-import type { LaunchStatus } from '../api/types.ts'
+import type { LaunchStatus, PaymentStatus } from '../api/types.ts'
 
 // A fixed locale keeps output in the interface language and makes tests predictable.
 const LOCALE = 'en-US'
@@ -24,7 +24,9 @@ const durationParts = new Intl.ListFormat(LOCALE, { style: 'long', type: 'conjun
 
 type DurationUnit = 'day' | 'hour' | 'minute'
 
-const STATUS_LABELS: Record<LaunchStatus, string> = {
+type StatusLabels<Status extends string> = Record<Status, string>
+
+const STATUS_LABELS: StatusLabels<LaunchStatus> = {
   draft: 'Draft',
   published: 'Published',
   confirmed: 'Confirmed',
@@ -33,11 +35,22 @@ const STATUS_LABELS: Record<LaunchStatus, string> = {
   cancelled: 'Cancelled',
 }
 
+const PAYMENT_STATUS_LABELS: StatusLabels<PaymentStatus> = {
+  pending: 'Pending',
+  paid: 'Paid',
+  refunded: 'Refunded',
+}
+
 export function formatPrice(amount: number): string {
   return priceFormat.format(amount)
 }
 
 export function formatLaunchDate(isoDate: string): string {
+  return dateFormat.format(new Date(isoDate))
+}
+
+/** When a booking was made, in the same format as launch dates. */
+export function formatBookingDate(isoDate: string): string {
   return dateFormat.format(new Date(isoDate))
 }
 
@@ -54,7 +67,11 @@ export function formatDuration(totalMinutes: number): string {
 }
 
 export function formatLaunchStatus(status: LaunchStatus): string {
-  return STATUS_LABELS[status]
+  return labelOrRaw(STATUS_LABELS, status)
+}
+
+export function formatPaymentStatus(status: PaymentStatus): string {
+  return labelOrRaw(PAYMENT_STATUS_LABELS, status)
 }
 
 export function formatSeats(count: number): string {
@@ -66,4 +83,9 @@ function formatUnit(value: number, unit: DurationUnit, showZero = false): string
     return ''
   }
   return new Intl.NumberFormat(LOCALE, { style: 'unit', unit, unitDisplay: 'long' }).format(value)
+}
+
+// The API may add a status the client does not know yet; showing it as sent keeps the page working and the value visible.
+function labelOrRaw<Status extends string>(labels: StatusLabels<Status>, status: Status): string {
+  return Object.hasOwn(labels, status) ? labels[status] : status
 }

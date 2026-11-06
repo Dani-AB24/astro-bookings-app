@@ -104,3 +104,19 @@ export async function bookSeats(request: APIRequestContext, launchId: string, se
   })
   expect(response.status()).toBe(201)
 }
+
+/** Logs a user in through the API and books seats as them, so the booking shows on their `/bookings` page. */
+export async function bookSeatsAs(
+  request: APIRequestContext,
+  user: TestUser,
+  launchId: string,
+  seats: number,
+): Promise<void> {
+  const login = await request.post(`${TEST_API_URL}/login`, { data: { email: user.email, password: user.password } })
+  expect(login.status()).toBe(200)
+  const response = await request.post(`${TEST_API_URL}/bookings`, {
+    headers: bearer({ token: (await login.json()).accessToken }),
+    data: { launchId, seats },
+  })
+  expect(response.status()).toBe(201)
+}

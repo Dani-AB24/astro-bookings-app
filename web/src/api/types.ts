@@ -76,3 +76,11 @@ export type Booking = {
   createdAt: string
   paymentStatus: PaymentStatus
 }
+
+/** The launch details that the booking GET routes embed. They are the launch's current values, not those at booking time. */
+export type BookingLaunch = Pick<Launch, 'name' | 'rocket' | 'slug' | 'price' | 'date' | 'duration' | 'launchSite' | 'status'>
+
+/** A booking as `GET /bookings` returns it, with its launch's details. */
+export type BookingWithLaunch = Booking & {
+  launch: BookingLaunch
+}
