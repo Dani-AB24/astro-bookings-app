@@ -3,6 +3,8 @@ import { readSession } from '../auth/session.ts'
 import type {
   ApiErrorBody,
   AuthResponse,
+  Booking,
+  CreateBookingRequest,
   HealthResponse,
   Launch,
   LoginRequest,
@@ -10,6 +12,12 @@ import type {
 } from './types.ts'
 
 const DEFAULT_API_URL = 'http://localhost:3000'
+const UNAUTHORIZED_STATUS = 401
+
+/** Called with the token the API rejected, so the session holder can end that session. */
+export type UnauthorizedHandler = (rejectedToken: string) => void
+
+let unauthorizedHandler: UnauthorizedHandler | undefined
 
 export const API_URL = import.meta.env.VITE_API_URL || DEFAULT_API_URL
 
@@ -21,8 +29,18 @@ type RequestOptions = {
   signal?: AbortSignal
 }
 
+/** Registered by AuthProvider, which lives outside this module and owns the session state. */
+export function setUnauthorizedHandler(handler: UnauthorizedHandler | undefined): void {
+  unauthorizedHandler = handler
+}
+
 export async function apiRequest<T>(path: string, options: RequestOptions = {}): Promise<T> {
-  const response = await send(path, options)
+  const token = readSession()?.accessToken
+  const response = await send(path, options, token)
+  // Only a request that carried a token can reveal an expired session; a wrong password on login is also a 401.
+  if (response.status === UNAUTHORIZED_STATUS && token !== undefined) {
+    unauthorizedHandler?.(token)
+  }
   const body = await readJson(response)
 
   if (!response.ok) {
@@ -52,14 +70,22 @@ export function getLaunch(id: string, signal?: AbortSignal): Promise<Launch> {
   return apiRequest<Launch>(`/launches/${encodeURIComponent(id)}`, { signal })
 }
 
-async function send(path: string, { method = 'GET', body, signal }: RequestOptions): Promise<Response> {
+/** Books and charges immediately. The API has no idempotency key, so each call can create a booking. */
+export function createBooking(details: CreateBookingRequest): Promise<Booking> {
+  return apiRequest<Booking>('/bookings', { method: 'POST', body: details })
+}
+
+async function send(
+  path: string,
+  { method = 'GET', body, signal }: RequestOptions,
+  token: string | undefined,
+): Promise<Response> {
   const headers: Record<string, string> = { Accept: 'application/json' }
   if (body !== undefined) {
     headers['Content-Type'] = 'application/json'
   }
-  const session = readSession()
-  if (session !== undefined) {
-    headers.Authorization = `Bearer ${session.accessToken}`
+  if (token !== undefined) {
+    headers.Authorization = `Bearer ${token}`
   }
 
   try {

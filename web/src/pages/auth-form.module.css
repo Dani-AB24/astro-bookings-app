@@ -47,3 +47,10 @@
 .alternative {
   color: var(--color-text-muted);
 }
+
+.notice {
+  padding: var(--space-sm) var(--space-md);
+  color: var(--color-warning-text);
+  background-color: var(--color-warning-background);
+  border-radius: var(--radius);
+}

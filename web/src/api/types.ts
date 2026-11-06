@@ -58,3 +58,21 @@ export type Launch = {
   availableSeats: number
   status: LaunchStatus
 }
+
+export type PaymentStatus = 'pending' | 'paid' | 'refunded'
+
+export type CreateBookingRequest = {
+  launchId: string
+  seats: number
+}
+
+/** A booking as `POST /bookings` returns it: without the `launch` details that the GET routes add. */
+export type Booking = {
+  id: string
+  launchId: string
+  /** A string such as `user-1`, unlike the numeric `id` in auth responses. */
+  userId: string
+  seats: number
+  createdAt: string
+  paymentStatus: PaymentStatus
+}

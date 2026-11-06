@@ -1,6 +1,7 @@
 import { Link, useParams } from 'react-router-dom'
 import { ApiError } from '../api/api-error.ts'
 import type { Launch } from '../api/types.ts'
+import { BookingSection } from '../bookings/booking-section.tsx'
 import { LoadError } from '../components/load-error.tsx'
 import { LoadingMessage } from '../components/loading-message.tsx'
 import { LaunchAvailabilityMarker } from '../launches/launch-availability-marker.tsx'
@@ -68,6 +69,7 @@ function LaunchDetails({ launch }: { launch: Launch }) {
           <dd>{launch.totalSeats}</dd>
         </div>
       </dl>
+      <BookingSection launch={launch} />
       <p>
         <Link to="/">All launches</Link>
       </p>

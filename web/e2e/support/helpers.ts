@@ -33,6 +33,8 @@ export type TestLaunch = {
   id: string
   name: string
   totalSeats: number
+  /** The owner's token, so a test can change the launch after creating it. */
+  ownerToken: string
 }
 
 type ApiAccount = { token: string }
@@ -54,7 +56,7 @@ async function registerApiAccount(request: APIRequestContext): Promise<ApiAccoun
  */
 export async function createLaunch(
   request: APIRequestContext,
-  options: { status?: LaunchStatus; totalSeats?: number } = {},
+  options: { status?: LaunchStatus; totalSeats?: number; price?: number; minSeats?: number } = {},
 ): Promise<TestLaunch> {
   const owner = await registerApiAccount(request)
   const response = await request.post(`${TEST_API_URL}/launches`, {
@@ -62,26 +64,35 @@ export async function createLaunch(
     data: {
       name: `launch-${randomUUID()}`,
       rocket: 'Test Rocket',
-      price: 25,
+      price: options.price ?? 25,
       date: FAR_FUTURE_DATE,
       duration: 90,
       launchSite: 'Test Site',
-      minSeats: 1,
+      minSeats: options.minSeats ?? 1,
       totalSeats: options.totalSeats ?? 4,
       status: 'published',
     },
   })
   expect(response.status()).toBe(201)
-  const launch: TestLaunch = await response.json()
+  const launch: TestLaunch = { ...(await response.json()), ownerToken: owner.token }
 
   if (options.status !== undefined && options.status !== 'published') {
-    const transition = await request.patch(`${TEST_API_URL}/launches/${launch.id}/status`, {
-      headers: bearer(owner),
-      data: { status: options.status },
-    })
-    expect(transition.status()).toBe(200)
+    await setLaunchStatus(request, launch, options.status)
   }
   return launch
+}
+
+/** Moves a launch to another status through the API, as its owner. */
+export async function setLaunchStatus(
+  request: APIRequestContext,
+  launch: TestLaunch,
+  status: LaunchStatus,
+): Promise<void> {
+  const transition = await request.patch(`${TEST_API_URL}/launches/${launch.id}/status`, {
+    headers: bearer({ token: launch.ownerToken }),
+    data: { status },
+  })
+  expect(transition.status()).toBe(200)
 }
 
 /** Books seats on a launch as a new user, through the API. */

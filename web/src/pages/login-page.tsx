@@ -11,7 +11,7 @@ import styles from './auth-form.module.css'
 const LOGIN_FIELDS = ['email', 'password'] as const
 
 export function LoginPage() {
-  const { login } = useAuth()
+  const { login, sessionExpired } = useAuth()
   const returnState = useReturnState()
   // RedirectIfLoggedIn moves on to the return page once the session is set.
   const mutation = useMutation({ mutationFn: login })
@@ -25,6 +25,11 @@ export function LoginPage() {
   return (
     <section className={styles.page}>
       <h1>Log in</h1>
+      {sessionExpired ? (
+        <p role="status" className={styles.notice}>
+          Your session has expired. Please log in again.
+        </p>
+      ) : null}
       <form className={styles.form} onSubmit={handleSubmit} noValidate>
         {errors.form === undefined ? null : (
           <p role="alert" className={styles.formError}>

@@ -4,6 +4,8 @@ import type { AuthUser, LoginRequest, RegisterRequest } from '../api/types.ts'
 export type AuthContextValue = {
   /** The logged-in user, or nothing for an anonymous visitor. */
   user: AuthUser | undefined
+  /** True after the API rejected the person's token, until they log in, register, or log out. */
+  sessionExpired: boolean
   login: (credentials: LoginRequest) => Promise<void>
   register: (details: RegisterRequest) => Promise<void>
   logout: () => void

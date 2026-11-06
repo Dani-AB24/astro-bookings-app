@@ -1,0 +1,18 @@
+.section {
+  display: grid;
+  gap: var(--space-sm);
+  max-width: 32rem;
+}
+
+.confirmation {
+  display: grid;
+  gap: var(--space-xs);
+  padding: var(--space-md);
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-accent);
+  border-radius: var(--radius);
+}
+
+.failure {
+  color: var(--color-error-text);
+}
