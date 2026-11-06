@@ -25,7 +25,7 @@
 
 **Query key `['bookings']`.** `book-seats` already invalidates it after a booking, and `AuthProvider` clears the cache when the session changes, which provides the `Own bookings only` behaviour across people.
 
-**Status labels in one place.** Map payment statuses to Paid, Pending, and Refunded. Map launch statuses to Open for booking, Confirmed, Sold out, Completed, Cancelled, and Draft. Show an unknown value as-is so that a future API status stays visible instead of breaking the page. Use the same launch status labels as the launch pages.
+**Status labels in one place.** Map payment statuses to Paid, Pending, and Refunded. Reuse the launch pages' launch status labels: Draft, Published, Confirmed, Sold out, Done, and Cancelled. Show an unknown value as-is so that a future API status stays visible instead of breaking the page.
 
 **Tests.** Real bookings are made through the API helpers. A cancelled launch uses a real status change by its owner. `pending` and `refunded` use `page.route()`, because nothing in the API currently produces them for a new booking. The server error also uses `page.route()`. A session expiring uses a tampered token.
 
